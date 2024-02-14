@@ -3,7 +3,7 @@ package cli
 import (
 	"context"
 	"errors"
-	"github.com/dborchard/tiny_crdb/pkg/server"
+	"github.com/dborchard/tiny_crdb/pkg/c_server"
 	"github.com/spf13/cobra"
 )
 

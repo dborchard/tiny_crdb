@@ -2,7 +2,7 @@ package kv
 
 import (
 	"context"
-	"github.com/dborchard/tiny_crdb/pkg/util/hlc"
+	"github.com/dborchard/tiny_crdb/pkg/y_util/hlc"
 )
 
 // TxnSenderFactory is the interface used to create new instances

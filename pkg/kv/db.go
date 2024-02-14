@@ -2,7 +2,7 @@ package kv
 
 import (
 	"context"
-	"github.com/dborchard/tiny_crdb/pkg/util/hlc"
+	"github.com/dborchard/tiny_crdb/pkg/y_util/hlc"
 )
 
 // DB is a database handle to a single cockroach cluster. A DB is safe for
