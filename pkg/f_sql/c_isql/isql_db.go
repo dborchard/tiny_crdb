@@ -62,24 +62,9 @@ type Txn interface {
 // transactional. If you just have an Executor, you don't know, but you
 // cannot assume one way or the other.
 type Executor interface {
-	// Exec executes the supplied SQL statement and returns the number of rows
-	// affected (not like the full results; see QueryIterator()). If no user has
-	// been previously set through SetSessionData, the statement is executed as
-	// the root user.
-	//
-	// If txn is not nil, the statement will be executed in the respective txn.
-	//
-	// Exec is deprecated because it may transparently execute a query as root.
-	// Use ExecEx instead.
-	Exec(
-		ctx context.Context, opName string, txn *kv.Txn, statement string, params ...interface{},
-	) (int, error)
 
 	// ExecEx is like Exec, but allows the caller to override some session data
 	// fields.
-	//
-	// The fields set in session that are set override the respective fields if
-	// they have previously been set through SetSessionData().
 	ExecEx(
 		ctx context.Context,
 		opName string,
@@ -88,98 +73,6 @@ type Executor interface {
 		stmt string,
 		qargs ...interface{},
 	) (int, error)
-
-	// QueryRow executes the supplied SQL statement and returns a single row, or
-	// nil if no row is found, or an error if more that one row is returned.
-	//
-	// QueryRow is deprecated. Use QueryRowEx() instead.
-	QueryRow(
-		ctx context.Context, opName string, txn *kv.Txn, statement string, qargs ...interface{},
-	) (tree.Datums, error)
-
-	// QueryRowEx is like QueryRow, but allows the caller to override some
-	// session data fields.
-	//
-	// The fields set in session that are set override the respective fields if
-	// they have previously been set through SetSessionData().
-	QueryRowEx(
-		ctx context.Context,
-		opName string,
-		txn *kv.Txn,
-		session sessiondata.InternalExecutorOverride,
-		stmt string,
-		qargs ...interface{},
-	) (tree.Datums, error)
-
-	// QueryRowExWithCols is like QueryRowEx, additionally returning the
-	// computed ResultColumns of the input query.
-	QueryRowExWithCols(
-		ctx context.Context,
-		opName string,
-		txn *kv.Txn,
-		session sessiondata.InternalExecutorOverride,
-		stmt string,
-		qargs ...interface{},
-	) (tree.Datums, colinfo.ResultColumns, error)
-
-	// QueryBuffered executes the supplied SQL statement and returns the
-	// resulting rows (meaning all of them are buffered at once). If no user has
-	// been previously set through SetSessionData, the statement is executed as
-	// the root user.
-	//
-	// If txn is not nil, the statement will be executed in the respective txn.
-	//
-	// QueryBuffered is deprecated because it may transparently execute a query
-	// as root. Use QueryBufferedEx instead.
-	QueryBuffered(
-		ctx context.Context,
-		opName string,
-		txn *kv.Txn,
-		stmt string,
-		qargs ...interface{},
-	) ([]tree.Datums, error)
-
-	// QueryBufferedEx executes the supplied SQL statement and returns the
-	// resulting rows (meaning all of them are buffered at once).
-	//
-	// If txn is not nil, the statement will be executed in the respective txn.
-	//
-	// The fields set in session that are set override the respective fields if
-	// they have previously been set through SetSessionData().
-	QueryBufferedEx(
-		ctx context.Context,
-		opName string,
-		txn *kv.Txn,
-		session sessiondata.InternalExecutorOverride,
-		stmt string,
-		qargs ...interface{},
-	) ([]tree.Datums, error)
-
-	// QueryIterator executes the query, returning an iterator that can be used
-	// to get the results. If the call is successful, the returned iterator
-	// *must* be closed.
-	//
-	// QueryIterator is deprecated because it may transparently execute a query
-	// as root. Use QueryIteratorEx instead.
-	QueryIterator(
-		ctx context.Context,
-		opName string,
-		txn *kv.Txn,
-		stmt string,
-		qargs ...interface{},
-	) (Rows, error)
-
-	// QueryIteratorEx executes the query, returning an iterator that can be
-	// used to get the results. If the call is successful, the returned iterator
-	// *must* be closed.
-	QueryIteratorEx(
-		ctx context.Context,
-		opName string,
-		txn *kv.Txn,
-		session sessiondata.InternalExecutorOverride,
-		stmt string,
-		qargs ...interface{},
-	) (Rows, error)
 
 	// QueryBufferedExWithCols is like QueryBufferedEx, additionally returning the computed
 	// ResultColumns of the input query.

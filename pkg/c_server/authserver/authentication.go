@@ -2,6 +2,7 @@ package authserver
 
 import (
 	sql "github.com/dborchard/tiny_crdb/pkg/f_sql"
+	isql "github.com/dborchard/tiny_crdb/pkg/f_sql/c_isql"
 )
 
 type authenticationServer struct {
