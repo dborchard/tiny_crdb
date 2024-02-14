@@ -10,7 +10,7 @@
 
 package isql
 
-import "github.com/dborchard/tiny_crdb/pkg/sql/sessiondata"
+import "github.com/dborchard/tiny_crdb/pkg/v_sql/sessiondata"
 
 type (
 

@@ -27,7 +27,7 @@ type TxnSenderFactory interface {
 // the "client" and the "server", involved in passing along and
 // ultimately evaluating requests (batches). The interface is now
 // considered regrettable because it's too narrow and at times leaky.
-// Notable implementors: kv.Txn, kvcoord.TxnCoordSender, server.Node,
+// Notable implementors: w_kv.Txn, kvcoord.TxnCoordSender, server.Node,
 // kvserver.Store, kvserver.Replica.
 type Sender interface {
 	// Send sends a batch for evaluation. Either a response or an error is
@@ -53,7 +53,7 @@ type Sender interface {
 	//
 	// TODO(andrei): The client does not currently use this last
 	// guarantee; it clones the txn for every request. Given that a
-	// kv.Txn can be used concurrently, in order for the client to
+	// w_kv.Txn can be used concurrently, in order for the client to
 	// take advantage of this, it would need to switch to a
 	// copy-on-write scheme so that its updates to the txn do not race
 	// with the server reading it. We should do this to avoid the
@@ -70,7 +70,7 @@ type Sender interface {
 // TxnSender is the interface used to call into a CockroachDB instance
 // when sending transactional requests. In addition to the usual
 // Sender interface, TxnSender facilitates marshaling of transaction
-// metadata between the "root" kv.Txn and "leaf" instances.
+// metadata between the "root" w_kv.Txn and "leaf" instances.
 type TxnSender interface {
 	Sender
 

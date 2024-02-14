@@ -12,18 +12,16 @@ package isql
 
 import (
 	"context"
-	"github.com/dborchard/tiny_crdb/pkg/sql/catalog/colinfo"
-	"github.com/dborchard/tiny_crdb/pkg/sql/sem/tree"
-	"github.com/dborchard/tiny_crdb/pkg/sql/sessiondata"
-
-	"github.com/dborchard/tiny_crdb/pkg/kv"
+	"github.com/dborchard/tiny_crdb/pkg/v_sql/catalog/colinfo"
+	"github.com/dborchard/tiny_crdb/pkg/v_sql/sem/tree"
+	"github.com/dborchard/tiny_crdb/pkg/v_sql/sessiondata"
 )
 
 // DB enables clients to create and execute sql transactions from code inside
 // the database. Multi-statement transactions should leverage the Txn method.
 type DB interface {
 
-	// KV returns the underlying *kv.DB.
+	// KV returns the underlying *w_kv.DB.
 	KV() *kv.DB
 
 	// Txn enables callers to run transactions with a *Collection such that all
@@ -43,7 +41,7 @@ type DB interface {
 // Txn is an internal sql transaction.
 type Txn interface {
 
-	// KV returns the underlying kv.Txn.
+	// KV returns the underlying w_kv.Txn.
 	KV() *kv.Txn
 
 	// SessionData returns the transaction's SessionData.
@@ -56,7 +54,7 @@ type Txn interface {
 // Executor is meant to be used by layers below SQL in the system that
 // nevertheless want to execute SQL queries (presumably against system tables).
 // It is extracted in this "isql" package to avoid circular references and
-// is implemented by *sql.InternalExecutor.
+// is implemented by *v_sql.InternalExecutor.
 //
 // TODO(ajwerner): Remove the txn argument from all the functions. They are
 // now implicit -- if you have your hands on an isql.Txn, you know it's

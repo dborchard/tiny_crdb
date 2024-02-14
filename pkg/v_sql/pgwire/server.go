@@ -1,9 +1,5 @@
 package pgwire
 
-import (
-	"github.com/dborchard/tiny_crdb/pkg/sql"
-)
-
 // Server implements the server side of the PostgreSQL wire protocol for one
 // specific tenant (i.e. its configuration is specific to one tenant).
 type Server struct {

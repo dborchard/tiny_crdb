@@ -9,7 +9,6 @@ import (
 var cockroachCmd = &cobra.Command{
 	Use:           "cockroach [command] (flags)",
 	Short:         "CockroachDB command-line interface and server",
-	Long:          `CockroachDB command-line interface and server.`,
 	SilenceUsage:  true,
 	SilenceErrors: true,
 	CompletionOptions: cobra.CompletionOptions{
