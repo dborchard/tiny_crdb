@@ -3,30 +3,15 @@ package cli
 import (
 	"github.com/spf13/cobra"
 	"os"
+	"strings"
 )
 
 var cockroachCmd = &cobra.Command{
-	Use:   "cockroach [command] (flags)",
-	Short: "CockroachDB command-line interface and server",
-	// TODO(cdo): Add a pointer to the docs in Long.
-	Long: `CockroachDB command-line interface and server.`,
-	// Disable automatic printing of usage information whenever an error
-	// occurs. Many errors are not the result of a bad command invocation,
-	// e.g. attempting to start a node on an in-use port, and printing the
-	// usage information in these cases obscures the cause of the error.
-	// Commands should manually print usage information when the error is,
-	// in fact, a result of a bad invocation, e.g. too many arguments.
-	SilenceUsage: true,
-	// Disable automatic printing of the error. We want to also print
-	// details and hints, which cobra does not do for us. Instead
-	// we do the printing in Main().
+	Use:           "cockroach [command] (flags)",
+	Short:         "CockroachDB command-line interface and server",
+	Long:          `CockroachDB command-line interface and server.`,
+	SilenceUsage:  true,
 	SilenceErrors: true,
-	// Version causes cobra to automatically support a --version flag
-	// that reports this string.
-	Version: "details:\n" + "v1" +
-		"\n(use '" + os.Args[0] + " version --build-tag' to display only the build tag)",
-	// Prevent cobra from auto-generating a completions command,
-	// since we provide our own.
 	CompletionOptions: cobra.CompletionOptions{
 		DisableDefaultCmd: true,
 	},
@@ -43,4 +28,46 @@ func init() {
 	cockroachCmd.AddCommand(
 		startSingleNodeCmd,
 	)
+}
+
+// Main is the entry point for the cli, with a single line calling it intended
+// to be the body of an action package main `main` func elsewhere. It is
+// abstracted for reuse by duplicated `main` funcs in different distributions.
+func Main() {
+	if len(os.Args) == 1 {
+		os.Args = append(os.Args, "help")
+	}
+
+	// We ignore the error in this lookup, because
+	// we want cobra to handle lookup errors with a verbose
+	// help message in Run() below.
+	cmd, _, _ := cockroachCmd.Find(os.Args[1:])
+
+	cmdName := commandName(cmd)
+	err := doMain(cmd, cmdName)
+	if err != nil {
+		os.Exit(1)
+	}
+
+}
+
+func doMain(cmd *cobra.Command, cmdName string) error {
+	return Run(os.Args[1:])
+}
+
+// Run ...
+func Run(args []string) error {
+	cockroachCmd.SetArgs(args)
+	return cockroachCmd.Execute()
+}
+
+// commandName computes the name of the command that args would invoke. For
+// example, the full name of "cockroach debug zip" is "debug zip". If args
+// specify a nonexistent command, commandName returns "cockroach".
+func commandName(cmd *cobra.Command) string {
+	rootName := cockroachCmd.CommandPath()
+	if cmd != nil {
+		return strings.TrimPrefix(cmd.CommandPath(), rootName+" ")
+	}
+	return rootName
 }
