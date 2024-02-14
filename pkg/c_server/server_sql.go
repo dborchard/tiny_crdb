@@ -3,7 +3,9 @@ package server
 import (
 	"context"
 	"github.com/dborchard/tiny_crdb/pkg/d_upgrade/upgrademanager"
+	sql "github.com/dborchard/tiny_crdb/pkg/v_sql"
 	"github.com/dborchard/tiny_crdb/pkg/v_sql/pgwire"
+	kv "github.com/dborchard/tiny_crdb/pkg/w_kv"
 )
 
 // SQLServer encapsulates the part of a CRDB server that is dedicated to SQL
@@ -17,11 +19,14 @@ type SQLServer struct {
 	// `set cluster setting version = <v>`.
 	upgradeManager *upgrademanager.Manager
 	execCfg        *sql.ExecutorConfig
-	internalDB     *sql.InternalDB
+
+	internalDB *sql.InternalDB
 }
 
 type sqlServerArgs struct {
 	internalDB *sql.InternalDB
+	// SQL uses KV, both for non-DistSQL and DistSQL execution.
+	db *kv.DB
 }
 
 // newSQLServer constructs a new SQLServer. The caller is responsible for

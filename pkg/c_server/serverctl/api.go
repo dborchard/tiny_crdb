@@ -30,7 +30,6 @@ type ServerStartupInterface interface {
 // ServerShutdownInterface is the subset of the APIs on a server
 // object that's sufficient to run a server shutdown.
 type ServerShutdownInterface interface {
-	AnnotateCtx(context.Context) context.Context
 	ShutdownRequested() <-chan ShutdownRequest
 }
 

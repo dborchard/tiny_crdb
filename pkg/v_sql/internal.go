@@ -6,6 +6,7 @@ import (
 	"github.com/dborchard/tiny_crdb/pkg/v_sql/isql"
 	"github.com/dborchard/tiny_crdb/pkg/v_sql/sem/tree"
 	"github.com/dborchard/tiny_crdb/pkg/v_sql/sessiondata"
+	kv "github.com/dborchard/tiny_crdb/pkg/w_kv"
 	"sync"
 )
 
@@ -30,6 +31,16 @@ func NewInternalDB(s *Server /**memMetrics MemoryMetrics, monitor *mon.BytesMoni
 		//memMetrics: memMetrics,
 		//monitor:    monitor,
 	}
+}
+
+// NewShimInternalDB is used to bootstrap the server which needs access to
+// components which will ultimately have a handle to an InternalDB. Some of
+// those components may attempt to access the *kv.DB before the InternalDB
+// has been fully initialized. To get around this, we initially construct
+// an InternalDB with just a handle to a *kv.DB and then we'll fill in the
+// object during sql server construction.
+func NewShimInternalDB(db *kv.DB) *InternalDB {
+	return &InternalDB{db: db}
 }
 
 type internalTxn struct {
