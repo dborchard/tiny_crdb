@@ -2,9 +2,13 @@ package cli
 
 import (
 	"context"
-	"errors"
+	"fmt"
 	"github.com/dborchard/tiny_crdb/pkg/c_server"
+	"github.com/dborchard/tiny_crdb/pkg/c_server/serverctl"
+	"github.com/dborchard/tiny_crdb/pkg/y_util/stop"
 	"github.com/spf13/cobra"
+	"os"
+	"os/signal"
 )
 
 type newServerFn func(ctx context.Context, serverCfg server.Config, stopper *stop.Stopper) (serverctl.ServerStartupInterface, error)
@@ -22,27 +26,9 @@ func runStartSingleNode(cmd *cobra.Command, args []string) error {
 	return runStart(cmd, args, true /*startSingleNode*/)
 }
 
-// runStart starts the cockroach node using --store as the list of
-// storage devices ("stores") on this machine and --join as the list
-// of other active nodes used to join this node to the cockroach
-// cluster, if this is its first time connecting.
-//
-// The argument startSingleNode is morally equivalent to `cmd ==
-// startSingleNodeCmd`, and triggers special initialization specific
-// to one-node clusters. See server/initial_sql.go for details.
-//
-// We need a separate argument instead of solely relying on cmd
-// because we cannot refer to startSingleNodeCmd under
-// runStartInternal: there would be a cyclic dependency between
-// runStart, runStartSingleNode and runStartSingleNodeCmd.
 func runStart(cmd *cobra.Command, args []string, startSingleNode bool) error {
 
 	newServerFn := func(_ context.Context, serverCfg server.Config, stopper *stop.Stopper) (serverctl.ServerStartupInterface, error) {
-		// Beware of not writing simply 'return server.NewServer()'. This is
-		// because it would cause the serverctl.ServerStartupInterface reference to
-		// always be non-nil, even if NewServer returns a nil pointer (and
-		// an error). The code below is dependent on the interface
-		// reference remaining nil in case of error.
 		s, err := server.NewServer(serverCfg, stopper)
 		if err != nil {
 			return nil, err
@@ -50,33 +36,77 @@ func runStart(cmd *cobra.Command, args []string, startSingleNode bool) error {
 		return s, nil
 	}
 
-	return runStartInternal(cmd, serverType, serverCfg.InitNode, newServerFn, startSingleNode)
+	return runStartInternal(cmd, newServerFn, startSingleNode)
 }
 
 // runStartInternal contains the code common to start a regular server
 // or a SQL-only server.
 func runStartInternal(
 	cmd *cobra.Command,
-	initConfigFn func(context.Context) error,
 	newServerFn newServerFn,
 	startSingleNode bool,
 ) error {
-	// Beyond this point, the configuration is set and the server is
-	// ready to start.
-
 	// Run the rest of the startup process in a goroutine separate from
 	// the main goroutine to avoid preventing proper handling of signals
 	// if we get stuck on something during initialization (#10138).
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	srvStatus, serverShutdownReqC := createAndStartServerAsync(ctx, newServerFn, startSingleNode)
+	// Set up the signal handlers. This also ensures that any of these
+	// signals received beyond this point do not interrupt the startup
+	// sequence until the point signals are checked below.
+	// We want to set up signal handling before starting logging, because
+	// logging uses buffering, and we want to be able to sync
+	// the buffers in the signal handler below. If we started capturing
+	// signals later, some startup logging might be lost.
+	signalCh := make(chan os.Signal, 1)
+	signal.Notify(signalCh, DrainSignals...)
+	if exitAbruptlySignal != nil {
+		signal.Notify(signalCh, exitAbruptlySignal)
+	}
+
+	// Set up the logging and profiling output.
+	//
+	// We want to do this as early as possible, because most of the code
+	// in CockroachDB may use logging, and until logging has been
+	// initialized log files will be created in $TMPDIR instead of their
+	// expected location.
+	//
+	// This initialization uses the various configuration parameters
+	// initialized by flag handling (before runStart was called). Any
+	// additional server configuration tweaks for the startup process
+	// must be necessarily non-logging-related, as logging parameters
+	// cannot be picked up beyond this point.
+	stopper, err := setupAndInitializeLoggingAndProfiling(ctx, cmd, true /* isServerCmd */)
+	if err != nil {
+		return err
+	}
+
+	// serverCfg is used as the client-side copy of default server
+	// parameters for CLI utilities.
+	//
+	// NB: `cockroach start` further initializes serverCfg for the newly
+	// created server.
+	//
+	// See below for defaults.
+	var serverCfg = func() server.Config {
+		return server.Config{}
+	}()
+	// Beyond this point, the configuration is set and the server is
+	// ready to start.
+
+	srvStatus, serverShutdownReqC := createAndStartServerAsync(ctx, &serverCfg, stopper, newServerFn, startSingleNode)
 
 	return waitForShutdown(
 		// NB: we delay the access to s, as it is assigned
 		// asynchronously in a goroutine above.
 		stopper, serverShutdownReqC, signalCh,
 		srvStatus)
+}
+
+func setupAndInitializeLoggingAndProfiling(ctx context.Context, cmd *cobra.Command, b bool) (stopper *stop.Stopper, err error) {
+	stopper = stop.NewStopper()
+	return stopper, nil
 }
 
 // createAndStartServerAsync starts an async goroutine which instantiates
@@ -88,17 +118,14 @@ func runStartInternal(
 // concurrently with createAndStartServerAsync.
 //
 // The arguments are as follows:
-//   - tBegin: time when startup began; used to report statistics at the end of startup.
 //   - serverCfg: the server configuration.
 //   - stopper: the stopper used to start all the async tasks. This is the stopper
 //     used by the shutdown logic.
-//   - startupSpan: the tracing span for the context that was started earlier
-//     during startup. It needs to be finalized when the async goroutine completes.
 //   - newServerFn: a constructor function for the server object.
-//   - serverType: a title used for the type of server. This is used
-//     when reporting the startup messages on the terminal & logs.
 func createAndStartServerAsync(
 	ctx context.Context,
+	serverCfg *server.Config,
+	stopper *stop.Stopper,
 	newServerFn newServerFn,
 	startSingleNode bool,
 ) (srvStatus *serverStatus, serverShutdownReqC <-chan serverctl.ShutdownRequest) {
@@ -113,44 +140,13 @@ func createAndStartServerAsync(
 			var err error
 			s, err = newServerFn(ctx, *serverCfg, stopper)
 			if err != nil {
-				return errors.Wrap(err, "failed to start server")
-			}
-
-			// Have we already received a signal to terminate? If so, just
-			// stop here.
-			if serverStatusMu.shutdownInProgress() {
-				return nil
+				return err
 			}
 
 			// Attempt to start the server.
 			if err := s.PreStart(ctx); err != nil {
-				if le := (*server.ListenError)(nil); errors.As(err, &le) {
-					const errorPrefix = "consider changing the port via --%s"
-					if le.Addr == serverCfg.Addr {
-						err = errors.Wrapf(err, errorPrefix, cliflags.ListenAddr.Name)
-					} else if le.Addr == serverCfg.HTTPAddr {
-						err = errors.Wrapf(err, errorPrefix, cliflags.ListenHTTPAddr.Name)
-					}
-				}
-
-				return errors.Wrap(err, "cockroach server exited with error")
+				return err
 			}
-			// Server started, notify the shutdown monitor running concurrently.
-			if shutdownInProgress := serverStatusMu.setStarted(s, stopper); shutdownInProgress {
-				// A shutdown was requested already, e.g. by sending SIGTERM to the process:
-				// maybeWaitForShutdown (which runs concurrently with this goroutine) has
-				// called serverStatusMu.startShutdown() already.
-				// However, because setStarted() had not been called before,
-				// maybeWaitForShutdown did not call Stop on the stopper.
-				// So we do it here.
-				stopper.Stop(ctx)
-				return nil
-			}
-			// After this point, if a shutdown is requested concurrently
-			// with the startup steps below, the stopper.Stop() method will
-			// be called by the shutdown goroutine, which in turn will cause
-			// all these startup steps to fail. So we do not need to look at
-			// the "shutdown status" in serverStatusMu any more.
 
 			// Accept internal clients early, as RunInitialSQL might need it.
 			if err := s.AcceptInternalClients(ctx); err != nil {
@@ -169,18 +165,15 @@ func createAndStartServerAsync(
 
 			// Now inform the user that the server is running and tell the
 			// user about its run-time derived parameters.
-			return reportServerInfo(ctx, tBegin, serverCfg, s.ClusterSettings(),
-				serverType, s.InitialStart(), s.LogicalClusterID())
+			return reportServerInfo(ctx, serverCfg)
 		}(); err != nil {
-			shutdownReqC <- serverctl.MakeShutdownRequest(serverctl.ShutdownReasonServerStartupError, errors.Wrapf(err, "server startup failed"))
+			shutdownReqC <- serverctl.MakeShutdownRequest(err)
 		} else {
 			// Start a goroutine that watches for shutdown requests and notifies
 			// errChan.
 			go func() {
 				select {
 				case req := <-s.ShutdownRequested():
-					shutdownCtx := s.AnnotateCtx(context.Background())
-					log.Infof(shutdownCtx, "server requesting spontaneous shutdown: %v", req.ShutdownCause())
 					shutdownReqC <- req
 				case <-stopper.ShouldQuiesce():
 				}
@@ -201,4 +194,29 @@ func createAndStartServerAsync(
 // to drain a server that doesn't exist or is in the middle of
 // starting up, or to start a server after shutdown has begun.
 type serverStatus struct {
+}
+
+// reportServerInfo prints out the server version and network details
+// in a standardized format.
+func reportServerInfo(
+	ctx context.Context,
+	serverCfg *server.Config,
+) error {
+	fmt.Println("CockroachDB node started")
+	return nil
+}
+
+func waitForShutdown(
+	stopper *stop.Stopper,
+	shutdownC <-chan serverctl.ShutdownRequest,
+	signalCh <-chan os.Signal,
+	serverStatusMu *serverStatus,
+) (returnErr error) {
+	select {
+	case shutdownRequest := <-shutdownC:
+		panic(shutdownRequest)
+	case sig := <-signalCh:
+		panic(sig)
+	}
+
 }

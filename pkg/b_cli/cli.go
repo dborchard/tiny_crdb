@@ -3,7 +3,6 @@ package cli
 import (
 	"github.com/spf13/cobra"
 	"os"
-	"strings"
 )
 
 var cockroachCmd = &cobra.Command{
@@ -18,12 +17,6 @@ var cockroachCmd = &cobra.Command{
 
 func init() {
 	cobra.EnableCommandSorting = false
-
-	// Set an error function for flag parsing which prints the usage message.
-	cockroachCmd.SetFlagErrorFunc(func(c *cobra.Command, err error) error {
-		return c.Usage()
-	})
-
 	cockroachCmd.AddCommand(
 		startSingleNodeCmd,
 	)
@@ -37,36 +30,18 @@ func Main() {
 		os.Args = append(os.Args, "help")
 	}
 
-	// We ignore the error in this lookup, because
-	// we want cobra to handle lookup errors with a verbose
-	// help message in Run() below.
-	cmd, _, _ := cockroachCmd.Find(os.Args[1:])
-
-	cmdName := commandName(cmd)
-	err := doMain(cmd, cmdName)
+	err := doMain()
 	if err != nil {
 		os.Exit(1)
 	}
 
 }
 
-func doMain(cmd *cobra.Command, cmdName string) error {
+func doMain() error {
 	return Run(os.Args[1:])
 }
 
-// Run ...
 func Run(args []string) error {
 	cockroachCmd.SetArgs(args)
 	return cockroachCmd.Execute()
-}
-
-// commandName computes the name of the command that args would invoke. For
-// example, the full name of "cockroach debug zip" is "debug zip". If args
-// specify a nonexistent command, commandName returns "cockroach".
-func commandName(cmd *cobra.Command) string {
-	rootName := cockroachCmd.CommandPath()
-	if cmd != nil {
-		return strings.TrimPrefix(cmd.CommandPath(), rootName+" ")
-	}
-	return rootName
 }
