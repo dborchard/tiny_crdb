@@ -112,68 +112,18 @@ func (ief *InternalDB) Executor(opts ...isql.ExecutorOption) isql.Executor {
 }
 
 type internalTxn struct {
-	InternalExecutor
+	internalExecutor
 	txn *kv.Txn
 }
 
-func (i internalTxn) KV() *kv.Txn {
-	//TODO implement me
-	panic("implement me")
+func (txn *internalTxn) SessionData() *sessiondata.SessionData {
+	return txn.sessionDataStack.Top()
 }
 
-func (i internalTxn) SessionData() *sessiondata.SessionData {
-	//TODO implement me
-	panic("implement me")
-}
+func (txn *internalTxn) KV() *kv.Txn { return txn.txn }
 
-func (i internalTxn) Exec(ctx context.Context, opName string, txn *kv.Txn, statement string, params ...interface{}) (int, error) {
-	//TODO implement me
-	panic("implement me")
-}
-
-func (i internalTxn) ExecEx(ctx context.Context, opName string, txn *kv.Txn, o sessiondata.InternalExecutorOverride, stmt string, qargs ...interface{}) (int, error) {
-	//TODO implement me
-	panic("implement me")
-}
-
-func (i internalTxn) QueryRow(ctx context.Context, opName string, txn *kv.Txn, statement string, qargs ...interface{}) (tree.Datums, error) {
-	//TODO implement me
-	panic("implement me")
-}
-
-func (i internalTxn) QueryRowEx(ctx context.Context, opName string, txn *kv.Txn, session sessiondata.InternalExecutorOverride, stmt string, qargs ...interface{}) (tree.Datums, error) {
-	//TODO implement me
-	panic("implement me")
-}
-
-func (i internalTxn) QueryRowExWithCols(ctx context.Context, opName string, txn *kv.Txn, session sessiondata.InternalExecutorOverride, stmt string, qargs ...interface{}) (tree.Datums, colinfo.ResultColumns, error) {
-	//TODO implement me
-	panic("implement me")
-}
-
-func (i internalTxn) QueryBuffered(ctx context.Context, opName string, txn *kv.Txn, stmt string, qargs ...interface{}) ([]tree.Datums, error) {
-	//TODO implement me
-	panic("implement me")
-}
-
-func (i internalTxn) QueryBufferedEx(ctx context.Context, opName string, txn *kv.Txn, session sessiondata.InternalExecutorOverride, stmt string, qargs ...interface{}) ([]tree.Datums, error) {
-	//TODO implement me
-	panic("implement me")
-}
-
-func (i internalTxn) QueryIterator(ctx context.Context, opName string, txn *kv.Txn, stmt string, qargs ...interface{}) (isql.Rows, error) {
-	//TODO implement me
-	panic("implement me")
-}
-
-func (i internalTxn) QueryIteratorEx(ctx context.Context, opName string, txn *kv.Txn, session sessiondata.InternalExecutorOverride, stmt string, qargs ...interface{}) (isql.Rows, error) {
-	//TODO implement me
-	panic("implement me")
-}
-
-func (i internalTxn) QueryBufferedExWithCols(ctx context.Context, opName string, txn *kv.Txn, session sessiondata.InternalExecutorOverride, stmt string, qargs ...interface{}) ([]tree.Datums, colinfo.ResultColumns, error) {
-	//TODO implement me
-	panic("implement me")
+type internalExecutor struct {
+	InternalExecutor
 }
 
 // InternalExecutor can be used internally by code modules to execute SQL
@@ -188,8 +138,21 @@ func (i internalTxn) QueryBufferedExWithCols(ctx context.Context, opName string,
 // Methods not otherwise specified are safe for concurrent execution.
 type InternalExecutor struct {
 	s *Server
+	// sessionDataStack, if not nil, represents the session variable stack used by
+	// statements executed on this internalExecutor. Note that queries executed
+	// by the executor will run on copies of the top element of this data.
+	sessionDataStack *sessiondata.Stack
 }
 
+func MakeInternalExecutor(
+	s *Server, //memMetrics MemoryMetrics, monitor *mon.BytesMonitor,
+) InternalExecutor {
+	return InternalExecutor{
+		s: s,
+		//mon:        monitor,
+		//memMetrics: memMetrics,
+	}
+}
 func (ie *InternalExecutor) Exec(ctx context.Context, opName string, txn *kv.Txn, statement string, params ...interface{}) (int, error) {
 	//TODO implement me
 	panic("implement me")
@@ -247,19 +210,6 @@ func (ie *InternalExecutor) QueryBufferedExWithCols(ctx context.Context, opName 
 // SetSessionData cannot be called concurrently with query execution.
 func (ie *InternalExecutor) SetSessionData(sessionData *sessiondata.SessionData) {
 	if sessionData != nil {
-	}
-}
-
-// MakeInternalExecutor creates an InternalExecutor.
-// TODO (janexing): usage of it should be deprecated with `DescsTxnWithExecutor()`
-// or `Executor()`.
-func MakeInternalExecutor(
-	s *Server, //memMetrics MemoryMetrics, monitor *mon.BytesMonitor,
-) InternalExecutor {
-	return InternalExecutor{
-		s: s,
-		//mon:        monitor,
-		//memMetrics: memMetrics,
 	}
 }
 
