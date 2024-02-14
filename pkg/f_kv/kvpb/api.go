@@ -7,4 +7,8 @@ type BatchResponse struct {
 }
 
 type Error struct {
+	Error error
+}
+
+type InternalClient struct {
 }

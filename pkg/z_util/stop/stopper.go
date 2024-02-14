@@ -70,3 +70,6 @@ func NewStopper() *Stopper {
 	register(s)
 	return s
 }
+
+func register(s *Stopper) {
+}

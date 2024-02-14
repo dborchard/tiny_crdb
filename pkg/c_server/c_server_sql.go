@@ -3,8 +3,9 @@ package server
 import (
 	"context"
 	"github.com/dborchard/tiny_crdb/pkg/d_upgrade/upgrademanager"
-	kv "github.com/dborchard/tiny_crdb/pkg/g_kv"
+	kv "github.com/dborchard/tiny_crdb/pkg/f_kv"
 	sql "github.com/dborchard/tiny_crdb/pkg/i_sql"
+	"github.com/dborchard/tiny_crdb/pkg/i_sql/isql"
 	"github.com/dborchard/tiny_crdb/pkg/i_sql/pgwire"
 )
 
@@ -14,19 +15,24 @@ import (
 // standalone SQLServer instances per tenant (the KV layer is shared across all
 // tenants).
 type SQLServer struct {
+	upgradeManager   *upgrademanager.Manager
+	execCfg          *sql.ExecutorConfig
+	internalDB       *sql.InternalDB
+	internalExecutor *sql.InternalExecutor
+}
 
-	// upgradeManager deals with cluster version upgrades on bootstrap and on
-	// `set cluster setting version = <v>`.
-	upgradeManager *upgrademanager.Manager
-	execCfg        *sql.ExecutorConfig
+func (S *SQLServer) ExecutorConfig() *sql.ExecutorConfig {
+	return S.execCfg
+}
 
-	internalDB *sql.InternalDB
+func (S *SQLServer) InternalExecutor() isql.Executor {
+	return S.internalExecutor
 }
 
 type sqlServerArgs struct {
-	internalDB *sql.InternalDB
-	// SQL uses KV, both for non-DistSQL and DistSQL execution.
-	db *kv.DB
+	internalDB               *sql.InternalDB
+	db                       *kv.DB
+	circularInternalExecutor *sql.InternalExecutor
 }
 
 // newSQLServer constructs a new SQLServer. The caller is responsible for

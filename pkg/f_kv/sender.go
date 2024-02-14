@@ -2,10 +2,37 @@ package kv
 
 import (
 	"context"
+	"github.com/dborchard/tiny_crdb/pkg/f_kv/kvpb"
+	"github.com/dborchard/tiny_crdb/pkg/f_kv/kvserver/concurrency/isolation"
 	"github.com/dborchard/tiny_crdb/pkg/f_roachpb"
-	"github.com/dborchard/tiny_crdb/pkg/g_kv/kvpb"
-	"github.com/dborchard/tiny_crdb/pkg/g_kv/kvserver/concurrency/isolation"
 	"github.com/dborchard/tiny_crdb/pkg/z_util/hlc"
+)
+
+// TxnType specifies whether a transaction is the root (parent)
+// transaction, or a leaf (child) in a tree of kv.Txns, as is
+// used in a DistSQL flow.
+type TxnType int
+
+const (
+	_ TxnType = iota
+	// RootTxn specifies this sender is the root transaction, and is
+	// responsible for aggregating all transactional state and
+	// finalizing the transaction. The root txn is responsible for
+	// heartbeating the transaction record.
+	RootTxn
+	// LeafTxn specifies this sender is for one of potentially many
+	// distributed client transactions. The state from this transaction
+	// must be propagated back to the root transaction and used to
+	// augment its state before the transaction can be finalized. Leaf
+	// transactions do not heartbeat the transaction record.
+	//
+	// Note: As leaves don't perform heartbeats, the transaction might
+	// be cleaned up while this leaf is executing an operation. We rely
+	// on the cleanup process poisoning the AbortSpans for all intents
+	// so that reads performed through a leaf txn don't miss writes
+	// previously performed by the transaction (at least not until the
+	// expiration of the GC period / abort span entry timeout).
+	LeafTxn
 )
 
 // TxnSenderFactory is the interface used to create new instances

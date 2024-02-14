@@ -23,11 +23,10 @@ var startSingleNodeCmd = &cobra.Command{
 }
 
 func runStartSingleNode(cmd *cobra.Command, args []string) error {
-	return runStart(cmd, args, true /*startSingleNode*/)
+	return runStart(cmd, args, true)
 }
 
 func runStart(cmd *cobra.Command, args []string, startSingleNode bool) error {
-
 	newServerFn := func(_ context.Context, serverCfg server.Config, stopper *stop.Stopper) (serverctl.ServerStartupInterface, error) {
 		s, err := server.NewServer(serverCfg, stopper)
 		if err != nil {
@@ -39,16 +38,11 @@ func runStart(cmd *cobra.Command, args []string, startSingleNode bool) error {
 	return runStartInternal(cmd, newServerFn, startSingleNode)
 }
 
-// runStartInternal contains the code common to start a regular server
-// or a SQL-only server.
 func runStartInternal(
 	cmd *cobra.Command,
 	newServerFn newServerFn,
 	startSingleNode bool,
 ) error {
-	// Run the rest of the startup process in a goroutine separate from
-	// the main goroutine to avoid preventing proper handling of signals
-	// if we get stuck on something during initialization (#10138).
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
@@ -82,13 +76,6 @@ func runStartInternal(
 		return err
 	}
 
-	// serverCfg is used as the client-side copy of default server
-	// parameters for CLI utilities.
-	//
-	// NB: `cockroach start` further initializes serverCfg for the newly
-	// created server.
-	//
-	// See below for defaults.
 	var serverCfg = func() server.Config {
 		return server.Config{}
 	}()
@@ -97,11 +84,7 @@ func runStartInternal(
 
 	srvStatus, serverShutdownReqC := createAndStartServerAsync(ctx, &serverCfg, stopper, newServerFn, startSingleNode)
 
-	return waitForShutdown(
-		// NB: we delay the access to s, as it is assigned
-		// asynchronously in a goroutine above.
-		stopper, serverShutdownReqC, signalCh,
-		srvStatus)
+	return waitForShutdown(stopper, serverShutdownReqC, signalCh, srvStatus)
 }
 
 func setupAndInitializeLoggingAndProfiling(ctx context.Context, cmd *cobra.Command, b bool) (stopper *stop.Stopper, err error) {
@@ -218,5 +201,4 @@ func waitForShutdown(
 	case sig := <-signalCh:
 		panic(sig)
 	}
-
 }

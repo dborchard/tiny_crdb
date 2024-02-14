@@ -2,7 +2,7 @@ package sql
 
 import (
 	"context"
-	kv "github.com/dborchard/tiny_crdb/pkg/g_kv"
+	kv "github.com/dborchard/tiny_crdb/pkg/f_kv"
 	"github.com/dborchard/tiny_crdb/pkg/i_sql/catalog/colinfo"
 	"github.com/dborchard/tiny_crdb/pkg/i_sql/isql"
 	"github.com/dborchard/tiny_crdb/pkg/i_sql/sem/tree"
