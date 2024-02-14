@@ -27,7 +27,8 @@ func init() {
 // abstracted for reuse by duplicated `main` funcs in different distributions.
 func Main() {
 	if len(os.Args) == 1 {
-		os.Args = append(os.Args, "help")
+		//os.Args = append(os.Args, "help")
+		os.Args = append(os.Args, "start-single-node")
 	}
 
 	err := doMain()
