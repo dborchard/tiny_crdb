@@ -49,3 +49,16 @@ type TypedExpr interface {
 	// by the argument passed from the client.
 	Eval(context.Context, ExprEvaluator) (Datum, error)
 }
+
+// typeAnnotation is an embeddable struct to provide a TypedExpr with a dynamic
+// type annotation.
+type typeAnnotation struct {
+	typ *types.T
+}
+
+// OrExpr represents an OR expression.
+type OrExpr struct {
+	Left, Right Expr
+
+	typeAnnotation
+}
