@@ -29,6 +29,10 @@ func (p *Pebble) MVCCIterate(ctx context.Context, start, end roachpb.Key, iterKi
 	//TODO implement me
 	panic("implement me")
 }
+func (p *Pebble) NewBatch() Batch {
+	//TODO implement me
+	panic("implement me")
+}
 
 func (p *Pebble) NewMVCCIterator(ctx context.Context, iterKind MVCCIterKind, opts IterOptions) (MVCCIterator, error) {
 	//TODO implement me
