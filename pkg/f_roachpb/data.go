@@ -10,10 +10,16 @@ import (
 type Key []byte
 
 type Value struct {
-	RawBytes []byte
+	RawBytes  []byte
+	Timestamp hlc.Timestamp
 }
 
 type Span struct {
+}
+
+type KeyValue struct {
+	Key   []byte
+	Value Value
 }
 
 // MakeTransaction creates a new transaction. The transaction key is

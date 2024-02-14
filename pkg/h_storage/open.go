@@ -2,7 +2,7 @@ package storage
 
 import (
 	"context"
-	"github.com/dborchard/tiny_crdb/pkg/z_util/vfs"
+	"github.com/dborchard/tiny_crdb/pkg/h_storage/vfs"
 )
 
 // A Location describes where the storage engine's data will be written. A

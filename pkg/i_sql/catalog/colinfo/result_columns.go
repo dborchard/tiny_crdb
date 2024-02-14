@@ -1,6 +1,9 @@
 package colinfo
 
-import "github.com/dborchard/tiny_crdb/pkg/i_sql/types"
+import (
+	"github.com/dborchard/tiny_crdb/pkg/i_sql/catalog/descpb"
+	"github.com/dborchard/tiny_crdb/pkg/i_sql/types"
+)
 
 // ResultColumn contains the name and type of a SQL "cell".
 type ResultColumn struct {

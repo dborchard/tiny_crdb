@@ -15,21 +15,15 @@ import (
 type InternalDB struct {
 	server *Server
 	db     *kv.DB
-	//cf         *descs.CollectionFactory
-	//lm         *lease.Manager
-	//memMetrics MemoryMetrics
-	//monitor    *mon.BytesMonitor
 }
 
+var _ isql.DB = &InternalDB{}
+
 // NewInternalDB returns a new InternalDB.
-func NewInternalDB(s *Server /**memMetrics MemoryMetrics, monitor *mon.BytesMonitor**/) *InternalDB {
+func NewInternalDB(s *Server) *InternalDB {
 	return &InternalDB{
 		server: s,
-		//cf:         s.cfg.CollectionFactory,
-		db: s.cfg.DB,
-		//lm:         s.cfg.LeaseManager,
-		//memMetrics: memMetrics,
-		//monitor:    monitor,
+		db:     s.cfg.DB,
 	}
 }
 
@@ -41,6 +35,80 @@ func NewInternalDB(s *Server /**memMetrics MemoryMetrics, monitor *mon.BytesMoni
 // object during sql server construction.
 func NewShimInternalDB(db *kv.DB) *InternalDB {
 	return &InternalDB{db: db}
+}
+
+func (ief *InternalDB) KV() *kv.DB {
+	return ief.db
+}
+
+// Txn is used to run queries with internal executor in a transactional
+// manner.
+func (ief *InternalDB) Txn(
+	ctx context.Context, f func(context.Context, isql.Txn) error, opts ...isql.TxnOption,
+) error {
+	wrapped := func(ctx context.Context, txn *internalTxn) error { return f(ctx, txn) }
+	return ief.txn(ctx, wrapped, opts...)
+}
+
+func (ief *InternalDB) txn(
+	ctx context.Context, f func(context.Context, *internalTxn) error, opts ...isql.TxnOption,
+) error {
+	var cfg isql.TxnConfig
+	cfg.Init(opts...)
+
+	db := ief.server.cfg.DB
+	run := db.Txn
+	for {
+		if err := run(ctx, func(ctx context.Context, kvTxn *kv.Txn) (err error) {
+			ie, commitTxnFn := ief.newInternalExecutorWithTxn(
+				ctx,
+				cfg.GetSessionData(),
+				//cf.GetClusterSettings(),
+				kvTxn,
+				//descsCol,
+			)
+			txn := internalTxn{txn: kvTxn}
+			txn.InternalExecutor = ie
+			if err := f(ctx, &txn); err != nil {
+				return err
+			}
+			return commitTxnFn(ctx)
+		}); err != nil {
+			return err
+		}
+	}
+}
+
+// newInternalExecutorWithTxn creates an internal executor with txn-related info,
+// such as descriptor collection and schema change job records, etc.
+// This function should only be used under
+// InternalDB.DescsTxnWithExecutor().
+// TODO (janexing): This function will be soon refactored after we change
+// the internal executor infrastructure with a single conn executor for all
+// sql statement executions within a txn.
+func (ief *InternalDB) newInternalExecutorWithTxn(
+	ctx context.Context,
+	sd *sessiondata.SessionData,
+	//settings *cluster.Settings,
+	txn *kv.Txn,
+	// descCol *descs.Collection,
+) (InternalExecutor, internalExecutorCommitTxnFunc) {
+	return InternalExecutor{}, nil
+}
+
+// internalExecutorCommitTxnFunc is to commit the txn associated with an
+// internal executor.
+type internalExecutorCommitTxnFunc func(ctx context.Context) error
+
+// Executor returns an Executor not bound with any txn.
+func (ief *InternalDB) Executor(opts ...isql.ExecutorOption) isql.Executor {
+	var cfg isql.ExecutorConfig
+	cfg.Init(opts...)
+	ie := MakeInternalExecutor(ief.server) //, ief.memMetrics, ief.monitor)
+	if sd := cfg.GetSessionData(); sd != nil {
+		ie.SetSessionData(sd)
+	}
+	return &ie
 }
 
 type internalTxn struct {
@@ -172,76 +240,6 @@ func (ie *InternalExecutor) QueryBufferedExWithCols(ctx context.Context, opName 
 	panic("implement me")
 }
 
-// Txn is used to run queries with internal executor in a transactional
-// manner.
-func (ief *InternalDB) Txn(
-	ctx context.Context, f func(context.Context, isql.Txn) error, opts ...isql.TxnOption,
-) error {
-	wrapped := func(ctx context.Context, txn *internalTxn) error { return f(ctx, txn) }
-	return ief.txn(ctx, wrapped, opts...)
-}
-
-func (ief *InternalDB) txn(
-	ctx context.Context, f func(context.Context, *internalTxn) error, opts ...isql.TxnOption,
-) error {
-	var cfg isql.TxnConfig
-	cfg.Init(opts...)
-
-	db := ief.server.cfg.DB
-	run := db.Txn
-	for {
-		if err := run(ctx, func(ctx context.Context, kvTxn *kv.Txn) (err error) {
-			ie, commitTxnFn := ief.newInternalExecutorWithTxn(
-				ctx,
-				cfg.GetSessionData(),
-				//cf.GetClusterSettings(),
-				kvTxn,
-				//descsCol,
-			)
-			txn := internalTxn{txn: kvTxn}
-			txn.InternalExecutor = ie
-			if err := f(ctx, &txn); err != nil {
-				return err
-			}
-			return commitTxnFn(ctx)
-		}); err != nil {
-			return err
-		}
-	}
-}
-
-// newInternalExecutorWithTxn creates an internal executor with txn-related info,
-// such as descriptor collection and schema change job records, etc.
-// This function should only be used under
-// InternalDB.DescsTxnWithExecutor().
-// TODO (janexing): This function will be soon refactored after we change
-// the internal executor infrastructure with a single conn executor for all
-// sql statement executions within a txn.
-func (ief *InternalDB) newInternalExecutorWithTxn(
-	ctx context.Context,
-	sd *sessiondata.SessionData,
-	//settings *cluster.Settings,
-	txn *kv.Txn,
-	// descCol *descs.Collection,
-) (InternalExecutor, internalExecutorCommitTxnFunc) {
-	return InternalExecutor{}, nil
-}
-
-// internalExecutorCommitTxnFunc is to commit the txn associated with an
-// internal executor.
-type internalExecutorCommitTxnFunc func(ctx context.Context) error
-
-// Executor returns an Executor not bound with any txn.
-func (ief *InternalDB) Executor(opts ...isql.ExecutorOption) isql.Executor {
-	var cfg isql.ExecutorConfig
-	cfg.Init(opts...)
-	ie := MakeInternalExecutor(ief.server) //, ief.memMetrics, ief.monitor)
-	if sd := cfg.GetSessionData(); sd != nil {
-		ie.SetSessionData(sd)
-	}
-	return &ie
-}
-
 // SetSessionData binds the session variables that will be used by queries
 // performed through this executor from now on. This creates a new session stack.
 // It is recommended to use SetSessionDataStack.
@@ -263,10 +261,6 @@ func MakeInternalExecutor(
 		//mon:        monitor,
 		//memMetrics: memMetrics,
 	}
-}
-
-func (ief *InternalDB) KV() *kv.DB {
-	return ief.db
 }
 
 type rowsIterator struct {
