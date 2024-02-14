@@ -12,10 +12,10 @@ package isql
 
 import (
 	"context"
-	kv "github.com/dborchard/tiny_crdb/pkg/f_kv"
-	"github.com/dborchard/tiny_crdb/pkg/i_sql/catalog/colinfo"
-	"github.com/dborchard/tiny_crdb/pkg/i_sql/sem/tree"
-	"github.com/dborchard/tiny_crdb/pkg/i_sql/sessiondata"
+	"github.com/dborchard/tiny_crdb/pkg/f_sql/catalog/colinfo"
+	"github.com/dborchard/tiny_crdb/pkg/f_sql/sem/tree"
+	"github.com/dborchard/tiny_crdb/pkg/f_sql/sessiondata"
+	kv "github.com/dborchard/tiny_crdb/pkg/g_kv"
 )
 
 // DB enables clients to create and execute sql transactions from code inside

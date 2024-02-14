@@ -2,8 +2,8 @@ package kvtenant
 
 import (
 	"context"
-	"github.com/dborchard/tiny_crdb/pkg/f_kv/kvpb"
-	roachpb "github.com/dborchard/tiny_crdb/pkg/f_roachpb"
+	"github.com/dborchard/tiny_crdb/pkg/g_kv/kvpb"
+	roachpb "github.com/dborchard/tiny_crdb/pkg/g_roachpb"
 	"sync"
 )
 

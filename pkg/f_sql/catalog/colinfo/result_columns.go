@@ -1,8 +1,8 @@
 package colinfo
 
 import (
-	"github.com/dborchard/tiny_crdb/pkg/i_sql/catalog/descpb"
-	"github.com/dborchard/tiny_crdb/pkg/i_sql/types"
+	"github.com/dborchard/tiny_crdb/pkg/f_sql/catalog/descpb"
+	"github.com/dborchard/tiny_crdb/pkg/f_sql/types"
 )
 
 // ResultColumn contains the name and type of a SQL "cell".

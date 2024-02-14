@@ -2,9 +2,9 @@ package kv
 
 import (
 	"context"
-	"github.com/dborchard/tiny_crdb/pkg/f_kv/kvpb"
-	"github.com/dborchard/tiny_crdb/pkg/f_kv/kvserver/concurrency/isolation"
-	"github.com/dborchard/tiny_crdb/pkg/f_roachpb"
+	"github.com/dborchard/tiny_crdb/pkg/g_kv/kvpb"
+	"github.com/dborchard/tiny_crdb/pkg/g_kv/kvserver/concurrency/isolation"
+	"github.com/dborchard/tiny_crdb/pkg/g_roachpb"
 	"github.com/dborchard/tiny_crdb/pkg/z_util/hlc"
 )
 

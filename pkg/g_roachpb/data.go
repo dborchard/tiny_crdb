@@ -1,7 +1,7 @@
 package roachpb
 
 import (
-	"github.com/dborchard/tiny_crdb/pkg/f_kv/kvserver/concurrency/isolation"
+	"github.com/dborchard/tiny_crdb/pkg/g_kv/kvserver/concurrency/isolation"
 	"github.com/dborchard/tiny_crdb/pkg/z_util/hlc"
 )
 

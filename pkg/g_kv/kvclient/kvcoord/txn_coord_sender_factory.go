@@ -1,8 +1,8 @@
 package kvcoord
 
 import (
-	kv "github.com/dborchard/tiny_crdb/pkg/f_kv"
-	"github.com/dborchard/tiny_crdb/pkg/f_roachpb"
+	kv "github.com/dborchard/tiny_crdb/pkg/g_kv"
+	"github.com/dborchard/tiny_crdb/pkg/g_roachpb"
 )
 
 // TxnCoordSenderFactory implements kv.TxnSenderFactory.

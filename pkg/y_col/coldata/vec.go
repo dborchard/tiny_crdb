@@ -1,6 +1,6 @@
 package coldata
 
-import "github.com/dborchard/tiny_crdb/pkg/i_sql/types"
+import "github.com/dborchard/tiny_crdb/pkg/f_sql/types"
 
 // Column is an interface that represents a raw array of a Go native type.
 type Column interface {

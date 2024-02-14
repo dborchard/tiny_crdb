@@ -1,9 +1,9 @@
 package coldataext
 
 import (
-	"github.com/dborchard/tiny_crdb/pkg/i_sql/sem/eval"
-	"github.com/dborchard/tiny_crdb/pkg/i_sql/sem/tree"
-	"github.com/dborchard/tiny_crdb/pkg/i_sql/types"
+	"github.com/dborchard/tiny_crdb/pkg/f_sql/sem/eval"
+	"github.com/dborchard/tiny_crdb/pkg/f_sql/sem/tree"
+	"github.com/dborchard/tiny_crdb/pkg/f_sql/types"
 	"github.com/dborchard/tiny_crdb/pkg/y_col/coldata"
 )
 

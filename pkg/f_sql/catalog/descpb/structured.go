@@ -1,6 +1,6 @@
 package descpb
 
-import "github.com/dborchard/tiny_crdb/pkg/i_sql/sem/catid"
+import "github.com/dborchard/tiny_crdb/pkg/f_sql/sem/catid"
 
 // ID, ColumnID, FamilyID, and IndexID are all uint32, but are each given a
 // type alias to prevent accidental use of one of the types where

@@ -3,7 +3,7 @@ package server
 import (
 	"context"
 	"github.com/dborchard/tiny_crdb/pkg/c_server/authserver"
-	ui "github.com/dborchard/tiny_crdb/pkg/e_ui"
+	ui "github.com/dborchard/tiny_crdb/pkg/d_ui"
 	"net/http"
 )
 

@@ -1,6 +1,6 @@
 package storage
 
-import roachpb "github.com/dborchard/tiny_crdb/pkg/f_roachpb"
+import roachpb "github.com/dborchard/tiny_crdb/pkg/g_roachpb"
 
 // MVCCValue is a versioned value, stored at an associated MVCCKey with a
 // non-zero version timestamp.

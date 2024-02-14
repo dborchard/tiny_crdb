@@ -2,8 +2,8 @@ package colfetcher
 
 import (
 	"context"
-	"github.com/dborchard/tiny_crdb/pkg/i_sql/colexecop"
-	"github.com/dborchard/tiny_crdb/pkg/i_sql/execinfra/execopnode"
+	"github.com/dborchard/tiny_crdb/pkg/f_sql/colexecop"
+	"github.com/dborchard/tiny_crdb/pkg/f_sql/execinfra/execopnode"
 	"github.com/dborchard/tiny_crdb/pkg/y_col/coldata"
 	"time"
 )

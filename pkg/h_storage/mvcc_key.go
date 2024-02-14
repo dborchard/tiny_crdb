@@ -1,7 +1,7 @@
 package storage
 
 import (
-	roachpb "github.com/dborchard/tiny_crdb/pkg/f_roachpb"
+	roachpb "github.com/dborchard/tiny_crdb/pkg/g_roachpb"
 	"github.com/dborchard/tiny_crdb/pkg/z_util/hlc"
 )
 
