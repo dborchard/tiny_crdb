@@ -15,6 +15,10 @@ type Engine interface {
 	// Flush causes the engine to write all in-memory data to disk
 	// immediately.
 	Flush() error
+	// NewBatch returns a new instance of a batched engine which wraps
+	// this engine. Batched engines accumulate all mutations and apply
+	// them atomically on a call to Commit().
+	NewBatch() Batch
 }
 
 // Reader is the read interface to an engine's data. Certain implementations
@@ -180,3 +184,46 @@ const (
 	// BackupReadCategory are reads for backups.
 	BackupReadCategory
 )
+
+// Batch is the interface for batch specific operations.
+type Batch interface {
+	Reader
+	WriteBatch
+	// NewBatchOnlyMVCCIterator returns a new instance of MVCCIterator that only
+	// sees the mutations in the batch (not the engine). It does not interleave
+	// intents, i.e., it is of kind MVCCKeyIterKind.
+	//
+	// REQUIRES: the batch is indexed.
+	NewBatchOnlyMVCCIterator(ctx context.Context, opts IterOptions) (MVCCIterator, error)
+}
+
+// WriteBatch is the interface for write batch specific operations.
+type WriteBatch interface {
+	Writer
+	// Close closes the batch, freeing up any outstanding resources.
+	Close()
+	// Commit atomically applies any batched updates to the underlying engine. If
+	// sync is true, the batch is synchronously flushed to the OS and committed to
+	// disk. Otherwise, this call returns before the data is even flushed to the
+	// OS, and it may be lost if the process terminates.
+	//
+	// This is a noop unless the batch was created via NewBatch().
+	Commit(sync bool) error
+	// CommitNoSyncWait atomically applies any batched updates to the underlying
+	// engine and initiates a disk write, but does not wait for that write to
+	// complete. The caller must call SyncWait to wait for the fsync to complete.
+	// The caller must not Close the Batch without first calling SyncWait.
+	CommitNoSyncWait() error
+	// SyncWait waits for the disk write initiated by a call to CommitNoSyncWait
+	// to complete.
+	SyncWait() error
+	// Empty returns whether the batch has been written to or not.
+	Empty() bool
+	// Count returns the number of memtable-modifying operations in the batch.
+	Count() uint32
+	// Len returns the size of the underlying representation of the batch.
+	// Because of the batch header, the size of the batch is never 0 and should
+	// not be used interchangeably with Empty. The method avoids the memory copy
+	// that Repr imposes, but it still may require flushing the batch's mutations.
+	Len() int
+}
