@@ -1,6 +1,6 @@
 package server
 
-import "github.com/dborchard/tiny_crdb/pkg/storage"
+import "github.com/dborchard/tiny_crdb/pkg/h_storage"
 
 // Config holds the parameters needed to set up a combined KV and SQL server.
 type Config struct {

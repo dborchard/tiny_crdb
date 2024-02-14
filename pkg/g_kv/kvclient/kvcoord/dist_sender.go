@@ -2,7 +2,7 @@ package kvcoord
 
 import (
 	"context"
-	"github.com/dborchard/tiny_crdb/pkg/w_kv/kvpb"
+	"github.com/dborchard/tiny_crdb/pkg/g_kv/kvpb"
 )
 
 // A DistSender provides methods to access Cockroach's monolithic,

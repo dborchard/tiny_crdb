@@ -2,11 +2,11 @@ package sql
 
 import (
 	"context"
-	"github.com/dborchard/tiny_crdb/pkg/v_sql/catalog/colinfo"
-	"github.com/dborchard/tiny_crdb/pkg/v_sql/isql"
-	"github.com/dborchard/tiny_crdb/pkg/v_sql/sem/tree"
-	"github.com/dborchard/tiny_crdb/pkg/v_sql/sessiondata"
-	kv "github.com/dborchard/tiny_crdb/pkg/w_kv"
+	kv "github.com/dborchard/tiny_crdb/pkg/g_kv"
+	"github.com/dborchard/tiny_crdb/pkg/i_sql/catalog/colinfo"
+	"github.com/dborchard/tiny_crdb/pkg/i_sql/isql"
+	"github.com/dborchard/tiny_crdb/pkg/i_sql/sem/tree"
+	"github.com/dborchard/tiny_crdb/pkg/i_sql/sessiondata"
 	"sync"
 )
 

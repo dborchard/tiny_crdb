@@ -3,9 +3,9 @@ package server
 import (
 	"context"
 	"github.com/dborchard/tiny_crdb/pkg/d_upgrade/upgrademanager"
-	sql "github.com/dborchard/tiny_crdb/pkg/v_sql"
-	"github.com/dborchard/tiny_crdb/pkg/v_sql/pgwire"
-	kv "github.com/dborchard/tiny_crdb/pkg/w_kv"
+	kv "github.com/dborchard/tiny_crdb/pkg/g_kv"
+	sql "github.com/dborchard/tiny_crdb/pkg/i_sql"
+	"github.com/dborchard/tiny_crdb/pkg/i_sql/pgwire"
 )
 
 // SQLServer encapsulates the part of a CRDB server that is dedicated to SQL

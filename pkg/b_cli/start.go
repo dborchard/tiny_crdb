@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"github.com/dborchard/tiny_crdb/pkg/c_server"
 	"github.com/dborchard/tiny_crdb/pkg/c_server/serverctl"
-	"github.com/dborchard/tiny_crdb/pkg/y_util/stop"
+	"github.com/dborchard/tiny_crdb/pkg/z_util/stop"
 	"github.com/spf13/cobra"
 	"os"
 	"os/signal"

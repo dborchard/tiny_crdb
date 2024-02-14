@@ -2,10 +2,10 @@ package kv
 
 import (
 	"context"
-	"github.com/dborchard/tiny_crdb/pkg/roachpb"
-	"github.com/dborchard/tiny_crdb/pkg/w_kv/kvpb"
-	"github.com/dborchard/tiny_crdb/pkg/w_kv/kvserver/concurrency/isolation"
-	"github.com/dborchard/tiny_crdb/pkg/y_util/hlc"
+	"github.com/dborchard/tiny_crdb/pkg/f_roachpb"
+	"github.com/dborchard/tiny_crdb/pkg/g_kv/kvpb"
+	"github.com/dborchard/tiny_crdb/pkg/g_kv/kvserver/concurrency/isolation"
+	"github.com/dborchard/tiny_crdb/pkg/z_util/hlc"
 )
 
 // TxnSenderFactory is the interface used to create new instances
