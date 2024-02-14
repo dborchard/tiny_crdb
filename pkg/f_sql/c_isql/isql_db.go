@@ -12,7 +12,7 @@ package isql
 
 import (
 	"context"
-	"github.com/dborchard/tiny_crdb/pkg/f_sql/catalog/colinfo"
+	"github.com/dborchard/tiny_crdb/pkg/f_sql/b_catalog/colinfo"
 	"github.com/dborchard/tiny_crdb/pkg/f_sql/sem/tree"
 	"github.com/dborchard/tiny_crdb/pkg/f_sql/sessiondata"
 	kv "github.com/dborchard/tiny_crdb/pkg/g_kv"
@@ -58,7 +58,7 @@ type Txn interface {
 // is implemented by *v_sql.InternalExecutor.
 //
 // TODO(ajwerner): Remove the txn argument from all the functions. They are
-// now implicit -- if you have your hands on an isql.Txn, you know it's
+// now implicit -- if you have your hands on an c_isql.Txn, you know it's
 // transactional. If you just have an Executor, you don't know, but you
 // cannot assume one way or the other.
 type Executor interface {
