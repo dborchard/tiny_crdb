@@ -154,6 +154,20 @@ type T struct {
 	InternalType InternalType
 }
 
+func (t *T) Family() Family {
+	return t.InternalType.Family
+}
+
+func (t *T) Equivalent(other *T) bool {
+	if t.Family() == AnyFamily || other.Family() == AnyFamily {
+		return true
+	}
+	if t.Family() != other.Family() {
+		return false
+	}
+	return true
+}
+
 type Family int32
 
 const (
@@ -162,6 +176,8 @@ const (
 	FloatFamily
 	StringFamily
 	BoolFamily
+	AnyFamily
+	BytesFamily
 )
 
 var (
@@ -226,4 +242,27 @@ var (
 	// compatibility with PostgreSQL.
 	VarChar = &T{InternalType: InternalType{
 		Family: StringFamily, Oid: githubcomlibpqoid.T_varchar, Locale: &emptyLocale}}
+
+	// Bytes is the type of a list of raw byte values.
+	Bytes = &T{InternalType: InternalType{
+		Family: BytesFamily, Oid: githubcomlibpqoid.T_bytea, Locale: &emptyLocale}}
+)
+
+// Convenience list of pre-constructed types. Caller code can use any of these
+// types, or use the MakeXXX methods to construct a custom type that is not
+// listed here (e.g. if a custom width is needed).
+var (
+	// Scalar contains all types that meet this criteria:
+	//
+	//   1. Scalar type (no ArrayFamily or TupleFamily types).
+	//   2. Non-ambiguous type (no UnknownFamily or AnyFamily types).
+	//   3. Canonical type for one of the type families.
+	//
+	Scalar = []*T{
+		Bool,
+		Int,
+		Float,
+		String,
+		Bytes,
+	}
 )

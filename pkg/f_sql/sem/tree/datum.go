@@ -1,6 +1,10 @@
 package tree
 
-import "time"
+import (
+	"context"
+	"github.com/dborchard/tiny_crdb/pkg/f_sql/types"
+	"time"
+)
 
 // Datum represents a SQL value.
 type Datum interface {
@@ -90,4 +94,256 @@ type CompareContext interface {
 
 	// MustGetPlaceholderValue is used to compare Datum
 	//MustGetPlaceholderValue(p *Placeholder) Datum
+}
+type DInt int64
+type DString string
+type DBytes string
+
+var _ Datum = new(DInt)
+var _ Datum = new(DString)
+var _ Datum = new(DBytes)
+
+// NewDInt is a helper routine to create a *DInt initialized from its argument.
+func NewDInt(d DInt) *DInt {
+	return &d
+}
+
+func (d *DInt) String() string {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (d *DInt) Format(ctx *FmtCtx) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (d *DInt) Walk(visitor Visitor) Expr {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (d *DInt) TypeCheck(ctx context.Context, semaCtx *SemaContext, desired *types.T) (TypedExpr, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (d *DInt) ResolvedType() *types.T {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (d *DInt) Eval(ctx context.Context, evaluator ExprEvaluator) (Datum, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (d *DInt) AmbiguousFormat() bool {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (d *DInt) Compare(ctx CompareContext, other Datum) int {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (d *DInt) CompareError(ctx CompareContext, other Datum) (int, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (d *DInt) Prev(ctx CompareContext) (Datum, bool) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (d *DInt) IsMin(ctx CompareContext) bool {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (d *DInt) Next(ctx CompareContext) (Datum, bool) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (d *DInt) IsMax(ctx CompareContext) bool {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (d *DInt) Max(ctx CompareContext) (Datum, bool) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (d *DInt) Min(ctx CompareContext) (Datum, bool) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (d *DInt) Size() uintptr {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (d *DString) String() string {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (d *DString) Format(ctx *FmtCtx) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (d *DString) Walk(visitor Visitor) Expr {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (d *DString) TypeCheck(ctx context.Context, semaCtx *SemaContext, desired *types.T) (TypedExpr, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (d *DString) ResolvedType() *types.T {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (d *DString) Eval(ctx context.Context, evaluator ExprEvaluator) (Datum, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (d *DString) AmbiguousFormat() bool {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (d *DString) Compare(ctx CompareContext, other Datum) int {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (d *DString) CompareError(ctx CompareContext, other Datum) (int, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (d *DString) Prev(ctx CompareContext) (Datum, bool) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (d *DString) IsMin(ctx CompareContext) bool {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (d *DString) Next(ctx CompareContext) (Datum, bool) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (d *DString) IsMax(ctx CompareContext) bool {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (d *DString) Max(ctx CompareContext) (Datum, bool) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (d *DString) Min(ctx CompareContext) (Datum, bool) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (d *DString) Size() uintptr {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (d *DBytes) String() string {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (d *DBytes) Format(ctx *FmtCtx) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (d *DBytes) Walk(visitor Visitor) Expr {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (d *DBytes) TypeCheck(ctx context.Context, semaCtx *SemaContext, desired *types.T) (TypedExpr, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (d *DBytes) ResolvedType() *types.T {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (d *DBytes) Eval(ctx context.Context, evaluator ExprEvaluator) (Datum, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (d *DBytes) AmbiguousFormat() bool {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (d *DBytes) Compare(ctx CompareContext, other Datum) int {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (d *DBytes) CompareError(ctx CompareContext, other Datum) (int, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (d *DBytes) Prev(ctx CompareContext) (Datum, bool) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (d *DBytes) IsMin(ctx CompareContext) bool {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (d *DBytes) Next(ctx CompareContext) (Datum, bool) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (d *DBytes) IsMax(ctx CompareContext) bool {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (d *DBytes) Max(ctx CompareContext) (Datum, bool) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (d *DBytes) Min(ctx CompareContext) (Datum, bool) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (d *DBytes) Size() uintptr {
+	//TODO implement me
+	panic("implement me")
 }
