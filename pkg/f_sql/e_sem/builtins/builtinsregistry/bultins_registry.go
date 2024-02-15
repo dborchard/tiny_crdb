@@ -1,6 +1,6 @@
 package builtinsregistry
 
-import "github.com/dborchard/tiny_crdb/pkg/f_sql/sem/tree"
+import "github.com/dborchard/tiny_crdb/pkg/f_sql/e_sem/tree"
 
 var registry = map[string]definition{}
 

@@ -1,8 +1,8 @@
 package builtins
 
 import (
-	"github.com/dborchard/tiny_crdb/pkg/f_sql/sem/builtins/builtinsregistry"
-	"github.com/dborchard/tiny_crdb/pkg/f_sql/sem/tree"
+	"github.com/dborchard/tiny_crdb/pkg/f_sql/e_sem/builtins/builtinsregistry"
+	"github.com/dborchard/tiny_crdb/pkg/f_sql/e_sem/tree"
 )
 
 // registerBuiltin adds the given builtin to the builtins registry. All

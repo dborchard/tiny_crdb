@@ -2,10 +2,10 @@ package builtins
 
 import (
 	"context"
-	"github.com/dborchard/tiny_crdb/pkg/f_sql/sem/builtins/builtinconstants"
-	"github.com/dborchard/tiny_crdb/pkg/f_sql/sem/eval"
-	"github.com/dborchard/tiny_crdb/pkg/f_sql/sem/tree"
-	"github.com/dborchard/tiny_crdb/pkg/f_sql/sem/volatility"
+	"github.com/dborchard/tiny_crdb/pkg/f_sql/e_sem/builtins/builtinconstants"
+	"github.com/dborchard/tiny_crdb/pkg/f_sql/e_sem/eval"
+	"github.com/dborchard/tiny_crdb/pkg/f_sql/e_sem/tree"
+	"github.com/dborchard/tiny_crdb/pkg/f_sql/e_sem/volatility"
 	"github.com/dborchard/tiny_crdb/pkg/f_sql/types"
 )
 

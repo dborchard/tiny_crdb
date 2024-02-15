@@ -1,7 +1,7 @@
 package tree
 
 import (
-	"github.com/dborchard/tiny_crdb/pkg/f_sql/sem/volatility"
+	"github.com/dborchard/tiny_crdb/pkg/f_sql/e_sem/volatility"
 	"github.com/dborchard/tiny_crdb/pkg/f_sql/types"
 	"github.com/lib/pq/oid"
 )

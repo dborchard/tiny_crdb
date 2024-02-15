@@ -3,7 +3,7 @@ package sql
 import (
 	"context"
 	"github.com/dborchard/tiny_crdb/pkg/f_sql/c_catalog/colinfo"
-	"github.com/dborchard/tiny_crdb/pkg/f_sql/sem/tree"
+	"github.com/dborchard/tiny_crdb/pkg/f_sql/e_sem/tree"
 	"github.com/dborchard/tiny_crdb/pkg/y_col/coldata"
 )
 
