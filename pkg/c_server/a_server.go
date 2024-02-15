@@ -6,6 +6,7 @@ import (
 	"github.com/dborchard/tiny_crdb/pkg/c_server/authserver"
 	"github.com/dborchard/tiny_crdb/pkg/c_server/serverctl"
 	sql "github.com/dborchard/tiny_crdb/pkg/f_sql"
+	"github.com/dborchard/tiny_crdb/pkg/f_sql/sessiondata"
 	kv "github.com/dborchard/tiny_crdb/pkg/g_kv"
 	"github.com/dborchard/tiny_crdb/pkg/g_kv/kvclient/kvcoord"
 	"github.com/dborchard/tiny_crdb/pkg/z_util/hlc"
@@ -71,15 +72,16 @@ func (s *topLevelServer) createAdminUser(
 	ctx context.Context, adminUser, adminPassword string,
 ) error {
 	ie := s.sqlServer.internalExecutor
-	_, err := ie.Exec(
+	_, err := ie.ExecEx(
 		ctx, "admin-user", nil,
+		sessiondata.InternalExecutorOverride{},
 		fmt.Sprintf("CREATE USER %s WITH PASSWORD $1", adminUser),
 		adminPassword,
 	)
 	if err != nil {
 		return err
 	}
-	_, err = ie.Exec(ctx, "admin-user", nil, fmt.Sprintf("GRANT admin TO %s", adminUser))
+	_, err = ie.ExecEx(ctx, "admin-user", nil, sessiondata.InternalExecutorOverride{}, fmt.Sprintf("GRANT admin TO %s", adminUser))
 	return err
 }
 

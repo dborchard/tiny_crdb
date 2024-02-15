@@ -3,10 +3,19 @@ package sql
 import (
 	"context"
 	"errors"
+	"fmt"
+	"github.com/dborchard/tiny_crdb/pkg/f_sql/a_parser/statements"
 	"github.com/dborchard/tiny_crdb/pkg/f_sql/sem/tree"
 	kv "github.com/dborchard/tiny_crdb/pkg/g_kv"
-	"io"
+	"github.com/dborchard/tiny_crdb/pkg/z_util/fsm"
 )
+
+// ResultBase is the common interface implemented by all the different command
+// results.
+type ResultBase interface {
+	CommandResultErrBase
+	CommandResultClose
+}
 
 type closeType int
 
@@ -26,46 +35,17 @@ const (
 )
 
 type connExecutor struct {
-	// executorType is set to whether this executor is an ordinary executor which
-	// responds to user queries or an internal one.
-	executorType executorType
-	server       *Server
-	stmtBuf      *StmtBuf
-	clientComm   ClientComm
-	planner      planner
-
-	// activated determines whether activate() was called already.
-	// When this is set, close() must be called to release resources.
+	executorType   executorType
+	server         *Server
+	stmtBuf        *StmtBuf
+	clientComm     ClientComm
+	planner        planner
 	activated      bool
 	queryCancelKey string
 	curStmtAST     tree.Statement
-
-	// Finity "the machine" Automaton is the state machine controlling the state
-	// below.
-	machine fsm.Machine
-
-	// The metrics to which the statement metrics should be accounted.
-	// This is different whether the executor is for regular client
-	// queries or for "internal" queries.
-	metrics       *Metrics
-	transitionCtx transitionCtx
-
-	// state encapsulates fields related to the ongoing SQL txn. It is mutated as
-	// the machine's ExtendedState.
-	state txnState
+	machine        fsm.Machine
 }
 
-// initConnEx creates a connExecutor and runs it on a separate goroutine. It
-// takes in a StmtBuf into which commands can be pushed and a WaitGroup that
-// will be signaled when connEx.run() returns.
-//
-// If txn is not nil, the statement will be executed in the respective txn.
-//
-// The ieResultWriter coordinates communicating results to the client. It may
-// block execution when rows are being sent in order to prevent hazardous
-// concurrency.
-//
-// sd will constitute the executor's session state.
 func (ie *InternalExecutor) initConnEx(
 	ctx context.Context,
 	txn *kv.Txn,
@@ -79,35 +59,17 @@ func (ie *InternalExecutor) initConnEx(
 		mode: mode,
 		sync: syncCallback,
 	}
-	clientComm.rowsAffectedState.rewind = func() {
-		var zero int
-		_ = w.addResult(ctx, ieIteratorResult{rowsAffected: &zero})
-	}
-
 	var ex *connExecutor
-	var err error
 	if txn == nil {
 		postSetupFn := func(ex *connExecutor) {
 		}
-		ie.s = &Server{
-			cfg: &ExecutorConfig{}}
+		ie.s = &Server{cfg: &ExecutorConfig{}}
 		ex = ie.s.newConnExecutor(
 			ctx,
 			stmtBuf,
 			clientComm,
-			ie.s.cfg.GenerateID(),
 			postSetupFn,
 		)
-	} else {
-		ex, err = ie.newConnExecutorWithTxn(
-			ctx,
-			txn,
-			stmtBuf,
-			clientComm,
-		)
-		if err != nil {
-			return nil, err
-		}
 	}
 
 	ex.executorType = executorTypeInternal
@@ -123,12 +85,6 @@ func (ex *connExecutor) run(
 		ex.activated = true
 	}
 
-	//sessionID := ex.planner.extendedEvalCtx.SessionID
-	//ex.server.cfg.SessionRegistry.register(sessionID, ex.queryCancelKey, ex)
-
-	defer func() {
-	}()
-
 	for {
 		ex.curStmtAST = nil
 		if err := ctx.Err(); err != nil {
@@ -137,9 +93,6 @@ func (ex *connExecutor) run(
 
 		var err error
 		if err = ex.execCmd(); err != nil {
-			if errors.Is(err, errDrainingComplete) || errors.Is(err, io.EOF) {
-				return nil
-			}
 			return err
 		}
 	}
@@ -147,4 +100,84 @@ func (ex *connExecutor) run(
 
 func (ex *connExecutor) close(ctx context.Context, closeType closeType) {
 	//  NONE.
+}
+
+func (ex *connExecutor) initPlanner(ctx context.Context, p *planner) {
+	//  NONE.
+}
+
+func (ex *connExecutor) execCmd() (retErr error) {
+	ctx := context.Background()
+	cmd, pos, err := ex.stmtBuf.CurCmd()
+	if err != nil {
+		return err // err could be io.EOF
+	}
+
+	var ev fsm.Event
+	var payload fsm.EventPayload
+	var res ResultBase
+
+	switch tcmd := cmd.(type) {
+	case ExecStmt:
+		err := func() error {
+			stmtRes := ex.clientComm.CreateStatementResult(tcmd.AST, pos, 0, "", true)
+			res = stmtRes
+			ev, payload, err = ex.execStmt(ctx, tcmd.Statement, nil, nil, stmtRes, true)
+			return err
+		}()
+		if err != nil {
+			return err
+		}
+	default:
+		panic(errors.New("unknown command type"))
+	}
+
+	// If an event was generated, feed it to the state machine.
+	var advInfo advanceInfo
+	if ev != nil {
+		var err error
+		advInfo, err = ex.txnStateTransitionsApplyWrapper(ev, payload, res, pos)
+		if err != nil {
+			return err
+		}
+	} else {
+		advInfo = advanceInfo{code: advanceOne}
+	}
+
+	// Move the cursor according to what the state transition told us to do.
+	switch advInfo.code {
+	case advanceOne:
+		ex.stmtBuf.AdvanceOne()
+	default:
+		panic(errors.New("unexpected advance code: %s"))
+	}
+	return nil
+}
+
+func (ex *connExecutor) txnStateTransitionsApplyWrapper(
+	ev fsm.Event, payload fsm.EventPayload, res ResultBase, pos CmdPos,
+) (advanceInfo, error) {
+	return advanceInfo{code: advanceOne}, nil
+}
+
+func (ex *connExecutor) execStmt(
+	ctx context.Context,
+	parserStmt statements.Statement[tree.Statement],
+	portal any,
+	pinfo any,
+	res RestrictedCommandResult,
+	canAutoCommit bool,
+) (fsm.Event, fsm.EventPayload, error) {
+	var ev fsm.Event
+	var payload fsm.EventPayload
+	var err error
+
+	switch ex.machine.CurState().(type) {
+	case stateNoTxn:
+		ev, payload = ex.execStmtInNoTxnState(parserStmt)
+	default:
+		panic(errors.New(fmt.Sprintf("unexpected state: %s", ex.machine.CurState())))
+	}
+
+	return ev, payload, err
 }

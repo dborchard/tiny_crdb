@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/dborchard/tiny_crdb/pkg/e_upgrade/upgrademanager"
 	sql "github.com/dborchard/tiny_crdb/pkg/f_sql"
+	isql "github.com/dborchard/tiny_crdb/pkg/f_sql/c_isql"
 	"github.com/dborchard/tiny_crdb/pkg/f_sql/pgwire"
 	kv "github.com/dborchard/tiny_crdb/pkg/g_kv"
 )

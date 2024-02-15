@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"github.com/dborchard/tiny_crdb/pkg/z_util/ring"
+	"io"
 	"sync"
 )
 
@@ -66,4 +67,36 @@ func (buf *StmtBuf) Push(ctx context.Context, cmd Command) error {
 
 	buf.mu.cond.Signal()
 	return nil
+}
+
+func (buf *StmtBuf) CurCmd() (Command, CmdPos, error) {
+	buf.mu.Lock()
+	defer buf.mu.Unlock()
+	for {
+		if buf.mu.closed {
+			return nil, 0, io.EOF
+		}
+		curPos := buf.mu.curPos
+		length := buf.mu.data.Len()
+		cmdIdx := int(curPos - buf.mu.startPos)
+		if cmdIdx < length {
+			return buf.mu.data.Get(cmdIdx), curPos, nil
+		}
+		if cmdIdx != length {
+			return nil, 0, errors.New("can only wait for next command; corrupt cursor: %d")
+		}
+		// Wait for the next Command to arrive to the buffer.
+		buf.mu.cond.Wait()
+	}
+}
+
+// AdvanceOne advances the cursor one Command over. The command over which
+// the cursor will be positioned when this returns may not be in the buffer
+// yet. The previous CmdPos is returned.
+func (buf *StmtBuf) AdvanceOne() CmdPos {
+	buf.mu.Lock()
+	defer buf.mu.Unlock()
+	prev := buf.mu.curPos
+	buf.mu.curPos++
+	return prev
 }

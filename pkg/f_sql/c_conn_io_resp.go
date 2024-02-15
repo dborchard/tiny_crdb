@@ -1,5 +1,12 @@
 package sql
 
+import (
+	"context"
+	"github.com/dborchard/tiny_crdb/pkg/f_sql/b_catalog/colinfo"
+	"github.com/dborchard/tiny_crdb/pkg/f_sql/sem/tree"
+	"github.com/dborchard/tiny_crdb/pkg/y_col/coldata"
+)
+
 // CommandResultErrBase is the subset of CommandResult dealing with setting a
 // query execution error.
 type CommandResultErrBase interface {
@@ -38,13 +45,43 @@ type streamingCommandResult struct {
 	discardCallback func()
 }
 
-// SetError is part of the RestrictedCommandResult interface.
+func (r *streamingCommandResult) SetColumns(ctx context.Context, columns colinfo.ResultColumns) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (r *streamingCommandResult) AddRow(ctx context.Context, row tree.Datums) error {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (r *streamingCommandResult) AddBatch(ctx context.Context, batch coldata.Batch) error {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (r *streamingCommandResult) SupportsAddBatch() bool {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (r *streamingCommandResult) SetRowsAffected(ctx context.Context, n int) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (r *streamingCommandResult) RowsAffected() int {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (r *streamingCommandResult) Discard() {
+	//TODO implement me
+	panic("implement me")
+}
+
 func (r *streamingCommandResult) SetError(err error) {
 	r.err = err
-	// Note that we intentionally do not send the error on the channel (when it
-	// is present) since we might replace the error with another one later which
-	// is allowed by the interface. An example of this is queryDone() closure
-	// in execStmtInOpenState().
 }
 
 // Err is part of the RestrictedCommandResult interface.
