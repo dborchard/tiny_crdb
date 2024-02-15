@@ -2,7 +2,7 @@ package sql
 
 import (
 	"context"
-	"github.com/dborchard/tiny_crdb/pkg/f_sql/b_catalog/colinfo"
+	"github.com/dborchard/tiny_crdb/pkg/f_sql/c_catalog/colinfo"
 	"github.com/dborchard/tiny_crdb/pkg/f_sql/sem/tree"
 	"github.com/dborchard/tiny_crdb/pkg/y_col/coldata"
 )
@@ -45,14 +45,21 @@ type streamingCommandResult struct {
 	discardCallback func()
 }
 
-func (r *streamingCommandResult) SetColumns(ctx context.Context, columns colinfo.ResultColumns) {
-	//TODO implement me
-	panic("implement me")
+// SetColumns is part of the RestrictedCommandResult interface.
+func (r *streamingCommandResult) SetColumns(ctx context.Context, cols colinfo.ResultColumns) {
+	if cols == nil {
+		cols = colinfo.ResultColumns{}
+	}
+	_ = r.w.addResult(ctx, ieIteratorResult{cols: cols})
 }
 
+// AddRow is part of the RestrictedCommandResult interface.
 func (r *streamingCommandResult) AddRow(ctx context.Context, row tree.Datums) error {
-	//TODO implement me
-	panic("implement me")
+	r.rowsAffected++
+	rowCopy := make(tree.Datums, len(row))
+	copy(rowCopy, row)
+	r.cannotRewind = true
+	return r.w.addResult(ctx, ieIteratorResult{row: rowCopy})
 }
 
 func (r *streamingCommandResult) AddBatch(ctx context.Context, batch coldata.Batch) error {
@@ -66,8 +73,10 @@ func (r *streamingCommandResult) SupportsAddBatch() bool {
 }
 
 func (r *streamingCommandResult) SetRowsAffected(ctx context.Context, n int) {
-	//TODO implement me
-	panic("implement me")
+	r.rowsAffected = n
+	if r.w != nil {
+		_ = r.w.addResult(ctx, ieIteratorResult{rowsAffected: &n})
+	}
 }
 
 func (r *streamingCommandResult) RowsAffected() int {

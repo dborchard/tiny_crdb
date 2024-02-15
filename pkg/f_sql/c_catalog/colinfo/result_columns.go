@@ -1,7 +1,7 @@
 package colinfo
 
 import (
-	"github.com/dborchard/tiny_crdb/pkg/f_sql/b_catalog/descpb"
+	"github.com/dborchard/tiny_crdb/pkg/f_sql/c_catalog/descpb"
 	"github.com/dborchard/tiny_crdb/pkg/f_sql/types"
 )
 

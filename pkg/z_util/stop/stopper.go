@@ -1,5 +1,7 @@
 package stop
 
+import "context"
+
 // A Stopper provides control over the lifecycle of goroutines started
 // through it via its RunTask, RunAsyncTask, and other similar methods.
 //
@@ -59,6 +61,10 @@ func (s *Stopper) ShouldQuiesce() <-chan struct{} {
 		return nil
 	}
 	return s.quiescer
+}
+
+func (s *Stopper) RunAsyncTaskEx(ctx context.Context, f func(ctx context.Context)) error {
+	return nil
 }
 
 // NewStopper returns an instance of Stopper.

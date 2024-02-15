@@ -1,7 +1,7 @@
 package parser
 
 import (
-	"github.com/dborchard/tiny_crdb/pkg/f_sql/a_parser/statements"
+	"github.com/dborchard/tiny_crdb/pkg/f_sql/b_parser/statements"
 	"github.com/dborchard/tiny_crdb/pkg/f_sql/sem/tree"
 )
 

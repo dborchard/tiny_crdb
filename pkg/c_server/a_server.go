@@ -6,6 +6,7 @@ import (
 	"github.com/dborchard/tiny_crdb/pkg/c_server/authserver"
 	"github.com/dborchard/tiny_crdb/pkg/c_server/serverctl"
 	sql "github.com/dborchard/tiny_crdb/pkg/f_sql"
+	pgwire "github.com/dborchard/tiny_crdb/pkg/f_sql/a_pgwire"
 	"github.com/dborchard/tiny_crdb/pkg/f_sql/sessiondata"
 	kv "github.com/dborchard/tiny_crdb/pkg/g_kv"
 	"github.com/dborchard/tiny_crdb/pkg/g_kv/kvclient/kvcoord"
@@ -30,6 +31,7 @@ type topLevelServer struct {
 
 	pgL         net.Listener
 	loopbackPgL *netutil.LoopbackListener
+	pgServer    *pgwire.Server
 }
 
 func (s *topLevelServer) PreStart(ctx context.Context) error {
@@ -43,6 +45,7 @@ func (s *topLevelServer) PreStart(ctx context.Context) error {
 	//}
 	//s.pgL = pgL
 	//s.loopbackPgL = loopbackPgL
+	s.pgServer.Start(ctx, s.stopper)
 
 	// Connect the HTTP endpoints. This also wraps the privileged HTTP
 	// endpoints served by gwMux by the HTTP cookie authentication
@@ -55,7 +58,10 @@ func (s *topLevelServer) PreStart(ctx context.Context) error {
 }
 
 func (s *topLevelServer) AcceptInternalClients(ctx context.Context) error {
-	return nil
+	return s.stopper.RunAsyncTaskEx(ctx,
+		func(ctx context.Context) {
+
+		})
 }
 
 func (s *topLevelServer) RunInitialSQL(ctx context.Context, startSingleNode bool, adminUser, adminPassword string) error {

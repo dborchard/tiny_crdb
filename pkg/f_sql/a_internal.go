@@ -2,9 +2,9 @@ package sql
 
 import (
 	"context"
-	parser "github.com/dborchard/tiny_crdb/pkg/f_sql/a_parser"
-	"github.com/dborchard/tiny_crdb/pkg/f_sql/b_catalog/colinfo"
-	isql "github.com/dborchard/tiny_crdb/pkg/f_sql/c_isql"
+	parser "github.com/dborchard/tiny_crdb/pkg/f_sql/b_parser"
+	"github.com/dborchard/tiny_crdb/pkg/f_sql/c_catalog/colinfo"
+	isql "github.com/dborchard/tiny_crdb/pkg/f_sql/d_isql"
 	"github.com/dborchard/tiny_crdb/pkg/f_sql/sem/tree"
 	"github.com/dborchard/tiny_crdb/pkg/f_sql/sessiondata"
 	"github.com/dborchard/tiny_crdb/pkg/f_sql/types"

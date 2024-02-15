@@ -1,7 +1,7 @@
 package sql
 
 import (
-	"github.com/dborchard/tiny_crdb/pkg/f_sql/a_parser/statements"
+	"github.com/dborchard/tiny_crdb/pkg/f_sql/b_parser/statements"
 	"github.com/dborchard/tiny_crdb/pkg/f_sql/sem/tree"
 	"github.com/dborchard/tiny_crdb/pkg/g_kv/kvserver/concurrency/isolation"
 	roachpb "github.com/dborchard/tiny_crdb/pkg/g_roachpb"

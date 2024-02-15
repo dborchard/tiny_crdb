@@ -1,6 +1,9 @@
 package sql
 
-import "context"
+import (
+	"context"
+	"github.com/dborchard/tiny_crdb/pkg/z_util/stop"
+)
 
 type Server struct {
 	cfg *ExecutorConfig
@@ -26,4 +29,8 @@ func (s *Server) newConnExecutor(
 
 	ex.initPlanner(ctx, &ex.planner)
 	return ex
+}
+
+func (s *Server) Start(ctx context.Context, stopper *stop.Stopper) {
+
 }
