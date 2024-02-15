@@ -13,7 +13,22 @@ type ResolvedFunctionDefinition struct {
 	Overloads []QualifiedOverload
 }
 
-func (d ResolvedFunctionDefinition) MergeWith(routine *ResolvedFunctionDefinition) (*ResolvedFunctionDefinition, error) {
+func (d *ResolvedFunctionDefinition) String() string {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (d *ResolvedFunctionDefinition) Format(ctx *FmtCtx) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (d *ResolvedFunctionDefinition) functionReference() {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (d *ResolvedFunctionDefinition) MergeWith(routine *ResolvedFunctionDefinition) (*ResolvedFunctionDefinition, error) {
 	return nil, nil
 }
 
@@ -33,4 +48,36 @@ func GetBuiltinFuncDefinition(
 		return ResolvedBuiltinFuncDefs[fName.Schema()+"."+fName.Object()], nil
 	}
 	return nil, nil
+}
+
+// FunctionDefinition implements a reference to the (possibly several)
+// overloads for a built-in function.
+// TODO(Chengxiong): Remove this struct entirely. Instead, use overloads from
+// function resolution or use "GetBuiltinProperties" if the need is to only look
+// at builtin functions(there are such existing use cases). Also change "Name"
+// of ResolvedFunctionDefinition to Name type.
+type FunctionDefinition struct {
+	// Name is the short name of the function.
+	Name string
+
+	// Definition is the set of overloads for this function name.
+	Definition []*Overload
+
+	// FunctionProperties are the properties common to all overloads.
+	FunctionProperties
+}
+
+func (f *FunctionDefinition) String() string {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (f *FunctionDefinition) Format(ctx *FmtCtx) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (f *FunctionDefinition) functionReference() {
+	//TODO implement me
+	panic("implement me")
 }

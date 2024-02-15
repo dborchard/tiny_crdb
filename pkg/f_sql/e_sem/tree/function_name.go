@@ -2,6 +2,9 @@ package tree
 
 import (
 	"context"
+	"errors"
+	"fmt"
+	"github.com/dborchard/tiny_crdb/pkg/f_sql/e_sem/catconstants"
 	"github.com/lib/pq/oid"
 	"strings"
 )
@@ -20,6 +23,17 @@ type ResolvableFunctionReference struct {
 	FunctionReference
 }
 
+// FunctionReference is the common interface to UnresolvedName and QualifiedFunctionName.
+type FunctionReference interface {
+	fmt.Stringer
+	NodeFormatter
+	functionReference()
+}
+
+var _ FunctionReference = &UnresolvedName{}
+var _ FunctionReference = &FunctionDefinition{}
+var _ FunctionReference = &ResolvedFunctionDefinition{}
+
 // Resolve converts a ResolvableFunctionReference into a *FunctionDefinition. If
 // the reference has already been resolved, it simply returns the definition. If
 // a FunctionReferenceResolver is provided, it will be used to resolve the
@@ -32,12 +46,9 @@ func (ref *ResolvableFunctionReference) Resolve(
 	case *ResolvedFunctionDefinition:
 		return t, nil
 	case *FunctionDefinition:
-		// TODO(Chengxiong): get rid of FunctionDefinition entirely.
 		parts := strings.Split(t.Name, ".")
 		if len(parts) > 2 {
-			// In theory, this should not happen since all builtin functions are
-			// defined within virtual schema and don't belong to any database catalog.
-			return nil, errors.AssertionFailedf("invalid builtin function name: %q", t.Name)
+			return nil, errors.New("function name has too many parts")
 		}
 		fullName := t.Name
 		if len(parts) == 1 {
@@ -46,44 +57,7 @@ func (ref *ResolvableFunctionReference) Resolve(
 		fd := ResolvedBuiltinFuncDefs[fullName]
 		ref.FunctionReference = fd
 		return fd, nil
-	case *UnresolvedName:
-		if resolver == nil {
-			// If a resolver is not provided, just try to fetch a builtin function.
-			fn, err := t.ToRoutineName()
-			if err != nil {
-				return nil, err
-			}
-			fd, err := GetBuiltinFuncDefinitionOrFail(fn, path)
-			if err != nil {
-				return nil, err
-			}
-			ref.FunctionReference = fd
-			return fd, nil
-		}
-		// Use the resolver if it is provided.
-		fd, err := resolver.ResolveFunction(ctx, MakeUnresolvedFunctionName(t), path)
-		if err != nil {
-			return nil, err
-		}
-		referenceByName, _ := t.ToUnresolvedObjectName(NoAnnotation)
-		ref.ReferenceByName = &referenceByName
-		ref.FunctionReference = fd
-		return fd, nil
-	case *FunctionOID:
-		if resolver == nil {
-			return GetBuiltinFunctionByOIDOrFail(t.OID)
-		}
-		fnName, o, err := resolver.ResolveFunctionByOID(ctx, t.OID)
-		if err != nil {
-			return nil, err
-		}
-		fd := &ResolvedFunctionDefinition{
-			Name:      fnName.Object(),
-			Overloads: []QualifiedOverload{{Schema: fnName.Schema(), Overload: o}},
-		}
-		ref.FunctionReference = fd
-		return fd, nil
 	default:
-		return nil, errors.AssertionFailedf("unknown resolvable function reference type %s", t)
+		return nil, errors.New("unknown function reference type")
 	}
 }

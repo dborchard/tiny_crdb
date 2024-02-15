@@ -62,3 +62,25 @@ type OrExpr struct {
 
 	typeAnnotation
 }
+type funcType int
+
+// FuncExpr.Type
+const (
+	_ funcType = iota
+	DistinctFuncType
+	AllFuncType
+)
+
+// AggType specifies the type of aggregation.
+type AggType int
+
+// FuncExpr.AggType
+const (
+	_ AggType = iota
+	// GeneralAgg is used for general-purpose aggregate functions.
+	// array_agg(col1 ORDER BY col2)
+	GeneralAgg
+	// OrderedSetAgg is used for ordered-set aggregate functions.
+	// percentile_disc(fraction) WITHIN GROUP (ORDER BY col1)
+	OrderedSetAgg
+)

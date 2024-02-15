@@ -16,6 +16,11 @@ type UnresolvedName struct {
 	Parts    NameParts
 }
 
+func (u *UnresolvedName) functionReference() {
+	//TODO implement me
+	panic("implement me")
+}
+
 var _ Expr = new(UnresolvedName)
 
 func (u *UnresolvedName) String() string {
@@ -49,4 +54,21 @@ func (u *UnresolvedName) ToRoutineName() (RoutineName, error) {
 type UnresolvedRoutineName interface {
 	UnresolvedName() *UnresolvedName
 	isUnresolvedRoutineName()
+}
+
+// UnresolvedObjectName is an unresolved qualified name for a database object
+// (table, view, etc). It is like UnresolvedName but more restrictive.
+// It should only be constructed via NewUnresolvedObjectName.
+type UnresolvedObjectName struct {
+	// NumParts indicates the number of name parts specified; always 1 or greater.
+	NumParts int
+
+	// Parts are the name components, in reverse order.
+	// There are at most 3: object name, schema, catalog/db.
+	//
+	// Note: Parts has a fixed size so that we avoid a heap allocation for the
+	// slice every time we construct an UnresolvedObjectName. It does imply
+	// however that Parts does not have a meaningful "length"; its actual length
+	// (the number of parts specified) is populated in NumParts above.
+	Parts [3]string
 }
