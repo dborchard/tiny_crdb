@@ -1,5 +1,7 @@
 package tree
 
+import "github.com/lib/pq/oid"
+
 // FunctionProperties defines the properties of the built-in
 // functions that are common across all overloads.
 type FunctionProperties struct {
@@ -41,6 +43,10 @@ type QualifiedOverload struct {
 
 var ResolvedBuiltinFuncDefs map[string]*ResolvedFunctionDefinition
 
+// OidToQualifiedBuiltinOverload is a map from builtin function OID to an
+// qualified overload.
+var OidToQualifiedBuiltinOverload map[oid.Oid]QualifiedOverload
+
 func GetBuiltinFuncDefinition(
 	fName RoutineName, searchPath SearchPath,
 ) (*ResolvedFunctionDefinition, error) {
@@ -80,4 +86,51 @@ func (f *FunctionDefinition) Format(ctx *FmtCtx) {
 func (f *FunctionDefinition) functionReference() {
 	//TODO implement me
 	panic("implement me")
+}
+
+// NewFunctionDefinition allocates a function definition corresponding
+// to the given built-in definition.
+func NewFunctionDefinition(
+	name string, props *FunctionProperties, def []Overload,
+) *FunctionDefinition {
+	overloads := make([]*Overload, len(def))
+
+	for i := range def {
+		if def[i].PreferredOverload {
+			break
+		}
+	}
+
+	for i := range def {
+		overloads[i] = &def[i]
+	}
+	return &FunctionDefinition{
+		Name:               name,
+		Definition:         overloads,
+		FunctionProperties: *props,
+	}
+}
+
+// QualifyBuiltinFunctionDefinition qualified all overloads in a function
+// definition with a schema name. Note that this function can only be used for
+// builtin function.
+func QualifyBuiltinFunctionDefinition(
+	def *FunctionDefinition, schema string,
+) *ResolvedFunctionDefinition {
+	ret := &ResolvedFunctionDefinition{
+		Name:      def.Name,
+		Overloads: make([]QualifiedOverload, 0, len(def.Definition)),
+	}
+	for _, o := range def.Definition {
+		ret.Overloads = append(
+			ret.Overloads,
+			MakeQualifiedOverload(schema, o),
+		)
+	}
+	return ret
+}
+
+// MakeQualifiedOverload creates a new QualifiedOverload.
+func MakeQualifiedOverload(schema string, overload *Overload) QualifiedOverload {
+	return QualifiedOverload{Schema: schema, Overload: overload}
 }
