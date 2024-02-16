@@ -12,6 +12,7 @@ type SessionData struct {
 	// Location indicates the current time zone.
 	Location       *time.Location
 	DefaultIntSize int
+	SearchPath     SearchPath
 }
 
 // Stack represents a stack of SessionData objects.

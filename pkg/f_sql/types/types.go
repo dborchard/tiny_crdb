@@ -168,6 +168,14 @@ func (t *T) Equivalent(other *T) bool {
 	return true
 }
 
+// Oid returns the type's Postgres Object ID. The OID identifies the type more
+// specifically than the type family, and is used by the Postgres wire protocol
+// various Postgres catalog tables, functions like pg_typeof, etc. Maintaining
+// the OID is required for Postgres-compatibility.
+func (t *T) Oid() githubcomlibpqoid.Oid {
+	return t.InternalType.Oid
+}
+
 type Family int32
 
 const (

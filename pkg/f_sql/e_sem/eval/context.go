@@ -1,5 +1,7 @@
 package eval
 
+import "github.com/dborchard/tiny_crdb/pkg/f_sql/sessiondata"
+
 // Context defines the context in which to evaluate an expression, allowing
 // the retrieval of state such as the node ID or statement start time.
 //
@@ -16,4 +18,14 @@ package eval
 // more fields from the sql package. Through that extendedEvalContext, this
 // struct now generally used by planNodes.
 type Context struct {
+	Planner          Planner
+	SessionDataStack *sessiondata.Stack
+}
+
+// SessionData returns the SessionData the current EvalCtx should use to eval.
+func (ec *Context) SessionData() *sessiondata.SessionData {
+	if ec.SessionDataStack == nil {
+		return nil
+	}
+	return ec.SessionDataStack.Top()
 }

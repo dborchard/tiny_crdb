@@ -84,6 +84,20 @@ type Executor interface {
 		stmt string,
 		qargs ...interface{},
 	) ([]tree.Datums, colinfo.ResultColumns, error)
+
+	// QueryRowEx is like QueryRow, but allows the caller to override some
+	// session data fields.
+	//
+	// The fields set in session that are set override the respective fields if
+	// they have previously been set through SetSessionData().
+	QueryRowEx(
+		ctx context.Context,
+		opName string,
+		txn *kv.Txn,
+		session sessiondata.InternalExecutorOverride,
+		stmt string,
+		qargs ...interface{},
+	) (tree.Datums, error)
 }
 
 // Rows is an iterator interface that's exposed by the internal

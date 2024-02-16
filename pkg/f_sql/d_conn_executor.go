@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/dborchard/tiny_crdb/pkg/f_sql/b_parser/statements"
+	"github.com/dborchard/tiny_crdb/pkg/f_sql/e_sem/eval"
 	"github.com/dborchard/tiny_crdb/pkg/f_sql/e_sem/tree"
 	kv "github.com/dborchard/tiny_crdb/pkg/g_kv"
 	"github.com/dborchard/tiny_crdb/pkg/z_util/fsm"
@@ -103,7 +104,7 @@ func (ex *connExecutor) close(ctx context.Context, closeType closeType) {
 }
 
 func (ex *connExecutor) initPlanner(ctx context.Context, p *planner) {
-	//  NONE.
+	ex.initEvalCtx(ctx, &p.extendedEvalCtx, p)
 }
 
 func (ex *connExecutor) execCmd() (retErr error) {
@@ -180,4 +181,15 @@ func (ex *connExecutor) execStmt(
 	}
 
 	return ev, payload, err
+}
+
+// initEvalCtx initializes the fields of an extendedEvalContext that stay the
+// same across multiple statements. resetEvalCtx must also be called before each
+// statement, to reinitialize other fields.
+func (ex *connExecutor) initEvalCtx(ctx context.Context, evalCtx *extendedEvalContext, p *planner) {
+	*evalCtx = extendedEvalContext{
+		Context: eval.Context{
+			Planner: p,
+		},
+	}
 }

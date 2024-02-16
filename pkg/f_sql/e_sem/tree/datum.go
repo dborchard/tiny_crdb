@@ -3,6 +3,7 @@ package tree
 import (
 	"context"
 	"github.com/dborchard/tiny_crdb/pkg/f_sql/types"
+	"github.com/lib/pq/oid"
 	"time"
 )
 
@@ -99,13 +100,41 @@ type DInt int64
 type DString string
 type DBytes string
 
+// DOid is the Postgres OID datum. It can represent either an OID type or any
+// of the reg* types, such as regproc or regclass. An OID must only be
+// 32 bits, since this width encoding is enforced in the pgwire protocol.
+// OIDs are not guaranteed to be globally unique.
+type DOid struct {
+	// A DOid embeds a oid.Oid, the underlying integer OID for this OID datum.
+	Oid oid.Oid
+	// semanticType indicates the particular variety of OID this datum is, whether raw
+	// Oid or a reg* type.
+	semanticType *types.T
+	// name is set to the resolved name of this OID, if available.
+	name string
+}
+
 var _ Datum = new(DInt)
 var _ Datum = new(DString)
 var _ Datum = new(DBytes)
+var _ Datum = new(DOid)
 
 // NewDInt is a helper routine to create a *DInt initialized from its argument.
 func NewDInt(d DInt) *DInt {
 	return &d
+}
+
+// NewDOidWithTypeAndName constructs a DOid with the given type and name.
+func NewDOidWithTypeAndName(d oid.Oid, semanticType *types.T, name string) *DOid {
+	oid := DOid{Oid: d, semanticType: semanticType, name: name}
+	return &oid
+}
+
+// NewDString is a helper routine to create a *DString initialized from its
+// argument.
+func NewDString(d string) *DString {
+	r := DString(d)
+	return &r
 }
 
 func (d *DInt) String() string {
@@ -344,6 +373,86 @@ func (d *DBytes) Min(ctx CompareContext) (Datum, bool) {
 }
 
 func (d *DBytes) Size() uintptr {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (d *DOid) String() string {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (d *DOid) Format(ctx *FmtCtx) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (d *DOid) Walk(visitor Visitor) Expr {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (d *DOid) TypeCheck(ctx context.Context, semaCtx *SemaContext, desired *types.T) (TypedExpr, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (d *DOid) ResolvedType() *types.T {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (d *DOid) Eval(ctx context.Context, evaluator ExprEvaluator) (Datum, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (d *DOid) AmbiguousFormat() bool {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (d *DOid) Compare(ctx CompareContext, other Datum) int {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (d *DOid) CompareError(ctx CompareContext, other Datum) (int, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (d *DOid) Prev(ctx CompareContext) (Datum, bool) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (d *DOid) IsMin(ctx CompareContext) bool {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (d *DOid) Next(ctx CompareContext) (Datum, bool) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (d *DOid) IsMax(ctx CompareContext) bool {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (d *DOid) Max(ctx CompareContext) (Datum, bool) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (d *DOid) Min(ctx CompareContext) (Datum, bool) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (d *DOid) Size() uintptr {
 	//TODO implement me
 	panic("implement me")
 }

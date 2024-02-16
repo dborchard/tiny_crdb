@@ -4,6 +4,7 @@ import (
 	"context"
 	parser "github.com/dborchard/tiny_crdb/pkg/f_sql/b_parser"
 	"github.com/dborchard/tiny_crdb/pkg/f_sql/c_catalog/colinfo"
+	"github.com/dborchard/tiny_crdb/pkg/f_sql/c_catalog/descs"
 	isql "github.com/dborchard/tiny_crdb/pkg/f_sql/d_isql"
 	"github.com/dborchard/tiny_crdb/pkg/f_sql/e_sem/tree"
 	"github.com/dborchard/tiny_crdb/pkg/f_sql/sessiondata"
@@ -115,11 +116,31 @@ type internalTxn struct {
 	txn *kv.Txn
 }
 
+func (txn *internalTxn) QueryRowEx(ctx context.Context, opName string, kvTxn *kv.Txn, session sessiondata.InternalExecutorOverride, stmt string, qargs ...interface{}) (tree.Datums, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (txn *internalTxn) Descriptors() *descs.Collection {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (txn *internalTxn) Regions() descs.RegionProvider {
+	//TODO implement me
+	panic("implement me")
+}
+
 func (txn *internalTxn) SessionData() *sessiondata.SessionData {
 	return txn.sessionDataStack.Top()
 }
 
 func (txn *internalTxn) KV() *kv.Txn { return txn.txn }
+
+func (txn *internalTxn) init(kvTxn *kv.Txn, ie InternalExecutor) {
+	txn.txn = kvTxn
+	txn.InternalExecutor = ie
+}
 
 type internalExecutor struct {
 	InternalExecutor
@@ -141,6 +162,11 @@ type InternalExecutor struct {
 	// statements executed on this internalExecutor. Note that queries executed
 	// by the executor will run on copies of the top element of this data.
 	sessionDataStack *sessiondata.Stack
+}
+
+func (ie *InternalExecutor) QueryRowEx(ctx context.Context, opName string, txn *kv.Txn, session sessiondata.InternalExecutorOverride, stmt string, qargs ...interface{}) (tree.Datums, error) {
+	//TODO implement me
+	panic("implement me")
 }
 
 func MakeInternalExecutor(s *Server) InternalExecutor {
