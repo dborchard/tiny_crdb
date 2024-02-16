@@ -57,6 +57,27 @@ func (ref *ResolvableFunctionReference) Resolve(
 		fd := ResolvedBuiltinFuncDefs[fullName]
 		ref.FunctionReference = fd
 		return fd, nil
+	case *UnresolvedName:
+		if resolver == nil {
+			// If a resolver is not provided, just try to fetch a builtin function.
+			fn, err := t.ToRoutineName()
+			if err != nil {
+				return nil, err
+			}
+			fd, err := GetBuiltinFuncDefinition(fn, path)
+			if err != nil {
+				return nil, err
+			}
+			ref.FunctionReference = fd
+			return fd, nil
+		}
+		// Use the resolver if it is provided.
+		fd, err := resolver.ResolveFunction(ctx, MakeUnresolvedFunctionName(t), path)
+		if err != nil {
+			return nil, err
+		}
+		ref.FunctionReference = fd
+		return fd, nil
 	default:
 		return nil, errors.New("unknown function reference type")
 	}

@@ -3,6 +3,7 @@ package sql
 import (
 	"context"
 	"github.com/dborchard/tiny_crdb/pkg/f_sql/e_sem/tree"
+	"github.com/lib/pq/oid"
 )
 
 // schemaResolver implements the resolver.SchemaResolver interface.
@@ -13,6 +14,8 @@ import (
 // TODO (Chengxiong) refactor this out into a separate package.
 type schemaResolver struct {
 }
+
+var _ tree.FunctionReferenceResolver = new(schemaResolver)
 
 func (sr *schemaResolver) ResolveFunction(
 	ctx context.Context, name tree.UnresolvedRoutineName, path tree.SearchPath,
@@ -42,6 +45,11 @@ func (sr *schemaResolver) ResolveFunction(
 	default:
 		return nil, err
 	}
+}
+
+func (sr *schemaResolver) ResolveFunctionByOID(ctx context.Context, oid oid.Oid) (*tree.RoutineName, *tree.Overload, error) {
+	//TODO implement me
+	panic("implement me")
 }
 
 func maybeLookupRoutine(

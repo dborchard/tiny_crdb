@@ -72,3 +72,23 @@ type UnresolvedObjectName struct {
 	// (the number of parts specified) is populated in NumParts above.
 	Parts [3]string
 }
+
+// UnresolvedFunctionName is an unresolved function name.
+type UnresolvedFunctionName struct {
+	u *UnresolvedName
+}
+
+// MakeUnresolvedFunctionName returns a new UnresolvedFunctionName containing
+// the give UnresolvedName.
+func MakeUnresolvedFunctionName(u *UnresolvedName) UnresolvedFunctionName {
+	return UnresolvedFunctionName{u: u}
+}
+func (u UnresolvedFunctionName) UnresolvedName() *UnresolvedName {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (u UnresolvedFunctionName) isUnresolvedRoutineName() {
+	//TODO implement me
+	panic("implement me")
+}
