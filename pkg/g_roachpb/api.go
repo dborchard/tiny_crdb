@@ -15,3 +15,6 @@ type LeafTxnInputState struct {
 }
 
 type TransactionStatus int32
+
+type Locality struct {
+}

@@ -79,3 +79,11 @@ func NewStopper() *Stopper {
 
 func register(s *Stopper) {
 }
+
+// Stop signals all live workers to stop and then waits for each to
+// confirm it has stopped.
+//
+// Stop is idempotent; concurrent calls will block on each other.
+func (s *Stopper) Stop(ctx context.Context) {
+
+}

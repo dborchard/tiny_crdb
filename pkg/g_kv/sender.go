@@ -143,3 +143,7 @@ type TxnSender interface {
 	// supported for transactions running under weak isolation levels.
 	CommitTimestamp() (hlc.Timestamp, error)
 }
+
+// SenderFunc is an adapter to allow the use of ordinary functions as
+// Senders.
+type SenderFunc func(context.Context, *kvpb.BatchRequest) (*kvpb.BatchResponse, *kvpb.Error)

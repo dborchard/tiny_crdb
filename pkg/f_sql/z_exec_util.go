@@ -7,6 +7,7 @@ import kv "github.com/dborchard/tiny_crdb/pkg/g_kv"
 // All fields holding a pointer or an interface are required to create
 // an Executor; the rest will have sane defaults set if omitted.
 type ExecutorConfig struct {
-	DB         *kv.DB
-	InternalDB *InternalDB
+	DB             *kv.DB
+	InternalDB     *InternalDB
+	DistSQLPlanner *DistSQLPlanner
 }

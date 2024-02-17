@@ -37,6 +37,57 @@ type planner struct {
 	// The internalSQLTxn may hold on to a stale txn reference and should
 	// never be accessed directly. Nothing explicitly resets this field.
 	internalSQLTxn internalTxn
+
+	// Corresponding Statement for this query.
+	stmt Statement
+
+	// curPlan collects the properties of the current plan being prepared. This state
+	// is undefined at the beginning of the planning of each new statement, and cannot
+	// be reused for an old prepared statement after a new statement has been prepared.
+	curPlan planTop
+}
+
+// internalPlannerParams encapsulates configurable planner fields. The defaults
+// are set in newInternalPlanner.
+type internalPlannerParams struct {
+	collection *descs.Collection
+}
+
+// InternalPlannerParamsOption is an option that can be passed to
+// NewInternalPlanner.
+type InternalPlannerParamsOption func(*internalPlannerParams)
+
+// NewInternalPlanner is an exported version of newInternalPlanner. It
+// returns an interface{} so it can be used outside of the sql package.
+func NewInternalPlanner(
+	opName string,
+	txn *kv.Txn,
+	user username.SQLUsername,
+	execCfg *ExecutorConfig,
+	sessionData *sessiondata.SessionData,
+	opts ...InternalPlannerParamsOption,
+) (interface{}, func()) {
+	return newInternalPlanner(opName, txn, user, execCfg, sessionData, opts...)
+}
+
+// newInternalPlanner creates a new planner instance for internal usage. This
+// planner is not associated with a sql session.
+//
+// Since it can't be reset, the planner can be used only for planning a single
+// statement.
+//
+// Returns a cleanup function that must be called once the caller is done with
+// the planner.
+func newInternalPlanner(
+	// TODO(yuzefovich): make this redact.RedactableString.
+	opName string,
+	txn *kv.Txn,
+	user username.SQLUsername,
+	execCfg *ExecutorConfig,
+	sd *sessiondata.SessionData,
+	opts ...InternalPlannerParamsOption,
+) (*planner, func()) {
+	return nil, nil
 }
 
 // extendedEvalContext extends eval.Context with fields that are needed for
@@ -128,4 +179,27 @@ func (p *planner) AutoCommit() bool {
 
 func (p *planner) Txn() *kv.Txn {
 	return p.txn
+}
+
+// makeOptimizerPlan generates a plan using the cost-based optimizer.
+// On success, it populates p.curPlan.
+func (p *planner) makeOptimizerPlan(ctx context.Context) error {
+	return nil
+	//opc := &p.optPlanningCtx
+
+	// If we got here, we did not create a plan above.
+	//return opc.runExecBuilder(
+	//	ctx,
+	//	&p.curPlan,
+	//	&p.stmt,
+	//	newExecFactory(ctx, p),
+	//	execMemo,
+	//	p.SemaCtx(),
+	//	p.EvalContext(),
+	//	p.autoCommit,
+	//)
+}
+
+func (p *planner) ExtendedEvalContext() *extendedEvalContext {
+	return &p.extendedEvalCtx
 }

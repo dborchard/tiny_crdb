@@ -12,8 +12,7 @@ type TxnCoordSenderFactory struct {
 
 // NewTxnCoordSenderFactory creates a new TxnCoordSenderFactory. The
 // factory creates new instances of TxnCoordSenders.
-func NewTxnCoordSenderFactory(wrapped kv.Sender,
-) *TxnCoordSenderFactory {
+func NewTxnCoordSenderFactory(wrapped kv.Sender) *TxnCoordSenderFactory {
 	tcf := &TxnCoordSenderFactory{
 		wrapped: wrapped,
 	}

@@ -1,6 +1,7 @@
 package kvpb
 
 type BatchRequest struct {
+	Requests interface{}
 }
 
 type BatchResponse struct {
@@ -11,4 +12,7 @@ type Error struct {
 }
 
 type InternalClient struct {
+}
+
+type RequestUnion struct {
 }

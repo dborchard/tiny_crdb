@@ -16,6 +16,13 @@ type DB struct {
 	crs     CrossRangeTxnWrapperSender
 }
 
+// NewDB returns a new DB.
+func NewDB(
+	actx context.Context, factory TxnSenderFactory, clock *hlc.Clock, stopper *stop.Stopper,
+) *DB {
+	return NewDBWithContext(factory, clock, DefaultDBContext(stopper))
+}
+
 // NewDBWithContext returns a new DB with the given parameters.
 func NewDBWithContext(factory TxnSenderFactory, clock *hlc.Clock, ctx DBContext) *DB {
 	return &DB{

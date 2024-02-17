@@ -39,3 +39,9 @@ package username
 type SQLUsername struct {
 	u string
 }
+
+// RootUser is the default cluster administrator.
+const RootUser = "root"
+
+// RootUserName is the SQLUsername for RootUser.
+func RootUserName() SQLUsername { return SQLUsername{RootUser} }
