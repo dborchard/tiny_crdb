@@ -2,6 +2,7 @@ package sql
 
 import (
 	"context"
+	"github.com/dborchard/tiny_crdb/pkg/e_security/username"
 	"github.com/dborchard/tiny_crdb/pkg/f_sql/c_catalog/descs"
 	"github.com/dborchard/tiny_crdb/pkg/f_sql/e_sem/eval"
 	"github.com/dborchard/tiny_crdb/pkg/f_sql/e_sem/tree"
@@ -9,7 +10,6 @@ import (
 	"github.com/dborchard/tiny_crdb/pkg/f_sql/sessiondata"
 	"github.com/dborchard/tiny_crdb/pkg/f_sql/types"
 	kv "github.com/dborchard/tiny_crdb/pkg/g_kv"
-	"github.com/dborchard/tiny_crdb/pkg/security/username"
 	"github.com/lib/pq/oid"
 )
 

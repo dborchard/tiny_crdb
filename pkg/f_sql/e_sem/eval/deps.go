@@ -2,11 +2,11 @@ package eval
 
 import (
 	"context"
+	"github.com/dborchard/tiny_crdb/pkg/e_security/username"
 	"github.com/dborchard/tiny_crdb/pkg/f_sql/e_sem/tree"
 	"github.com/dborchard/tiny_crdb/pkg/f_sql/privilege"
 	"github.com/dborchard/tiny_crdb/pkg/f_sql/sessiondata"
 	"github.com/dborchard/tiny_crdb/pkg/f_sql/types"
-	"github.com/dborchard/tiny_crdb/pkg/security/username"
 )
 
 // Planner is a limited planner that can be used from EvalContext.
