@@ -14,6 +14,7 @@ import (
 )
 
 type planner struct {
+	schemaResolver
 	extendedEvalCtx extendedEvalContext
 	// autoCommit indicates whether the plan is allowed (but not required) to
 	// commit the transaction along with other KV operations. Committing the txn
@@ -75,16 +76,6 @@ func (p *planner) ResolveOIDFromString(ctx context.Context, resultType *types.T,
 }
 
 func (p *planner) ResolveOIDFromOID(ctx context.Context, resultType *types.T, toResolve *tree.DOid) (_ *tree.DOid, errSafeToIgnore bool, _ error) {
-	//TODO implement me
-	panic("implement me")
-}
-
-func (p *planner) ResolveFunction(ctx context.Context, name tree.UnresolvedRoutineName, path tree.SearchPath) (*tree.ResolvedFunctionDefinition, error) {
-	//TODO implement me
-	panic("implement me")
-}
-
-func (p *planner) ResolveFunctionByOID(ctx context.Context, oid oid.Oid) (*tree.RoutineName, *tree.Overload, error) {
 	//TODO implement me
 	panic("implement me")
 }
